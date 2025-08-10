@@ -1,4 +1,5 @@
 --target=~/.config
+--ignore=\.*\.md
 --ignore=.stowrc
 --ignore=DS_Store
 --adopt

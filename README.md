@@ -53,3 +53,10 @@ Multiple stow directories passing are actually supported:
 ```bash
 stow -v -t ~/.config tmux nvim
 ```
+
+To "re-stow" (unlink and link) all the following command could be executed:
+
+ ```bash
+stow -nvRt ~/.config bash
+stow -nRt ~/.config bash
+```

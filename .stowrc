@@ -2,4 +2,5 @@
 --ignore=\.*\.md
 --ignore=.stowrc
 --ignore=DS_Store
+--ignore=\.*\.~
 --adopt

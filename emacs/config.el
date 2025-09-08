@@ -93,11 +93,17 @@
     "e d" '(eval-defun :wk "Evaluate defun containing or after point")
     "e r" '(eval-region :wk "Evaluate elisp in region")) 
   
+  ;; sudo edit keybindings
+  (samu/keybindings
+    "f s" '(sudo-edit-find-file :wk "Sudo find file")
+    "f S" '(sudo-edit :wk "Sudo edit current file"))
+
   ;; Toggles keybindings 
   (samu/keybindings
     "t"   '(:ignore t :wk "Toggle")
     "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
-    "t t" '(visual-line-mode :wk "Toggle truncated lines"))
+    "t t" '(visual-line-mode :wk "Toggle truncated lines")
+    "t v" '(vterm-toggle :wk "Toggle vterm"))
     
   ;; Helper / Reload config keybindings
   (samu/keybindings
@@ -111,8 +117,12 @@
   (samu/keybindings
     "."       '(find-file :wk "Find file")
     "f c"     '((lambda () (interactive) (find-file "~/.config/emacs/config.org")) :wk "Edit emacs config")
+    "f r"     '(counsel-recentf :wk "Find recent files")
     "TAB TAB" '(comment-line :wk "Comment lines"))
 )
+
+(add-to-list 'custom-theme-load-path "~/.config/emacs/themes/")
+(load-theme 'tokyo t)
 
 (set-face-attribute 'default nil
   :font "JetBrains Mono"
@@ -142,10 +152,19 @@
 ;; Uncomment the following line if line spacing needs adjusting.
 (setq-default line-spacing 0.12)
 
-(global-set-key (kbd "M-+") 'text-scale-increase)
-(global-set-key (kbd "M--") 'text-scale-decrease)
-(global-set-key (kbd "<M-wheel-up>") 'text-scale-increase)
-(global-set-key (kbd "<M-wheel-down>") 'text-scale-decrease)
+(use-package all-the-icons
+  :if (display-graphic-p))
+
+(use-package all-the-icons-dired
+  :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
+
+;;(global-set-key (kbd "M-+") 'text-scale-increase)
+;;(global-set-key (kbd "M--") 'text-scale-decrease)
+;;(global-set-key (kbd "<M-wheel-up>") 'text-scale-increase)
+;;(global-set-key (kbd "<M-wheel-down>") 'text-scale-decrease)
+
+(use-package rainbow-mode
+  :hook ((org-mode prog-mode) . rainbow-mode))
 
 (menu-bar-mode -1)
 (tool-bar-mode -1)
@@ -165,6 +184,62 @@
 (setq org-src-preserve-indentation t)
 
 (require 'org-tempo)
+
+(use-package ivy
+  :demand t
+  :bind
+  ;; ivy-resume resumes the last Ivy-based completion.
+  (("C-c C-r" . ivy-resume)
+   ("C-x B" . ivy-switch-buffer-other-window))
+  :custom
+  (setq ivy-use-virtual-buffers t)
+  (setq ivy-count-format "(%d/%d) ")
+  (setq enable-recursive-minibuffers t)
+  :config
+  (ivy-mode))
+
+(use-package counsel
+  :after ivy
+  :config (counsel-mode))
+
+;; Only if emacs is used via GUI
+(use-package all-the-icons-ivy-rich
+  :if (display-graphic-p)
+  :init (all-the-icons-ivy-rich-mode 1)) ;; Icons need to be present
+
+(use-package ivy-rich
+  :after ivy
+  :init (ivy-rich-mode 1) ;; this gets us descriptions in M-x.
+  :custom
+  (ivy-virtual-abbreviate 'full
+   ivy-rich-switch-buffer-align-virtual-buffer t
+   ivy-rich-path-style 'abbrev))
+
+(use-package sudo-edit)
+
+(use-package vterm
+:config
+(setq shell-file-name "/opt/homebrew/bin/fish"
+      vterm-max-scrollback 5000))
+
+(use-package vterm-toggle
+  :after vterm
+  :config
+  (setq vterm-toggle-fullscreen-p nil)
+  (setq vterm-toggle-scope 'project)
+  (add-to-list 'display-buffer-alist
+               '((lambda (buffer-or-name _)
+                     (let ((buffer (get-buffer buffer-or-name)))
+                       (with-current-buffer buffer
+                         (or (equal major-mode 'vterm-mode)
+                             (string-prefix-p vterm-buffer-name (buffer-name buffer))))))
+                  (display-buffer-reuse-window display-buffer-at-bottom)
+                  ;;(display-buffer-reuse-window display-buffer-in-direction)
+                  ;;display-buffer-in-direction/direction/dedicated is added in emacs27
+                  ;;(direction . bottom)
+                  ;;(dedicated . t) ;dedicated is supported in emacs27
+                  (reusable-frames . visible)
+                  (window-height . 0.3))))
 
 (use-package which-key
   :init

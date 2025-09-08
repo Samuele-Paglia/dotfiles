@@ -25,6 +25,7 @@ brew install stow
 Using the `.stowrc` file in order to pass flags to stow, the only command to be executed after this repo clone and stow installation (if required) will be:
 
 ```bash
+mkdir -p $HOME/.config
 stow .
 ```
 

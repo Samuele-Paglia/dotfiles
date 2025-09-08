@@ -1,5 +1,13 @@
 # TMUX setup
 
+## TMUX MacOS' installation
+
+Install TMUX using brew:
+
+```bash
+brew install tmux
+```
+
 ## TMUX Plugin Manager installation
 
 Clone the TMUX plugin manager repo:

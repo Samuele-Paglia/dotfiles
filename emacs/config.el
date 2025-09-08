@@ -52,6 +52,7 @@
     (setq evil-want-keybinding nil)
     (setq evil-vsplit-window-right t)
     (setq evil-split-window-below t)
+    (setq evil-symbol-word-search t) ;; Allows to recognise as a whole word those that contain underscores (useful for '*' and '#' use)
     (evil-mode))
   (use-package evil-collection
     :ensure t

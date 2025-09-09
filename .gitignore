@@ -3,3 +3,7 @@
 *~
 # TMUX plugins directory
 tmux/plugins
+# Emacs directories to not track
+emacs/elpaca/
+emacs/recentf
+emacs/tramp

@@ -120,10 +120,14 @@
     "f c"     '((lambda () (interactive) (find-file "~/.config/emacs/config.org")) :wk "Edit emacs config")
     "f r"     '(counsel-recentf :wk "Find recent files")
     "TAB TAB" '(comment-line :wk "Comment lines"))
+
+  ;; App launcher
+  (samu/keybindings
+    "x" '(counsel-osx-app :wk "App launcher"));; It could be se globally if needed
 )
 
 (add-to-list 'custom-theme-load-path "~/.config/emacs/themes/")
-(load-theme 'tokyo t)
+(load-theme 'tokyo t) ;; disable-theme to go back to the default
 
 (set-face-attribute 'default nil
   :font "JetBrains Mono"
@@ -241,6 +245,28 @@
                   ;;(dedicated . t) ;dedicated is supported in emacs27
                   (reusable-frames . visible)
                   (window-height . 0.3))))
+
+(use-package counsel-osx-app
+  :after counsel
+  :ensure t)
+
+(defun emacs-counsel-launcher ()
+  "Create and select a frame called emacs-counsel-launcher which consists only of a minibuffer and has specific dimensions. Runs counsel-osx-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
+  (interactive)
+  (with-selected-frame
+    (make-frame '((name . "emacs-counsel-launcher")
+                  (minibuffer . only)
+                  (fullscreen . 0) ; no fullscreen
+                  (undecorated . t) ; remove title bar
+                  ;;(auto-raise . t) ; focus on this frame
+                  ;;(tool-bar-lines . 0)
+                  ;;(menu-bar-lines . 0)
+                  (internal-border-width . 10)
+                  (width . 80)
+                  (height . 11)))
+                  (unwind-protect
+                    (counsel-osx-app)
+                    (delete-frame))))
 
 (use-package which-key
   :init

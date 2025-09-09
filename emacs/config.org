@@ -26,6 +26,7 @@
 - [[#useful-utilities][Useful "utilities"]]
   - [[#sudo-edit][Sudo edit]]
   - [[#vterm--vterm-toggle][Vterm & Vterm-Toggle]]
+  - [[#app-launcher][App launcher]]
 - [[#keybindings-discovery][Keybindings discovery]]
   - [[#which-key-tool][Which-key tool]]
 
@@ -180,6 +181,10 @@ The program that handles the keybindings configuration is general.
     "f c"     '((lambda () (interactive) (find-file "~/.config/emacs/config.org")) :wk "Edit emacs config")
     "f r"     '(counsel-recentf :wk "Find recent files")
     "TAB TAB" '(comment-line :wk "Comment lines"))
+
+  ;; App launcher
+  (samu/keybindings
+    "x" '(counsel-osx-app :wk "App launcher"));; It could be se globally if needed
 )
 #+end_src
 
@@ -189,7 +194,7 @@ An Emacs theme can be created using the [[https://emacsfodder.github.io/emacs-th
 
 #+begin_src emacs-lisp
 (add-to-list 'custom-theme-load-path "~/.config/emacs/themes/")
-(load-theme 'tokyo t)
+(load-theme 'tokyo t) ;; disable-theme to go back to the default
 #+end_src
 
 * Fonts
@@ -414,6 +419,42 @@ To enable [[https://github.com/jixiuf/vterm-toggle][vterm-toggle]]:
                   (reusable-frames . visible)
                   (window-height . 0.3))))
 #+end_src
+
+** App launcher
+
+Counsel, through the 'counsel-linux-app' command provided by default, enables Linux apps launching. Since I'm on MacOS, the 'counsel-osx-app' needs to be enabled in order to be used.
+
+A good alternative is [[https://github.com/SebastienWae/app-launcher/][app-launcher]] but it seems not to be supported in MacOS. 
+
+#+begin_src emacs-lisp
+(use-package counsel-osx-app
+  :after counsel
+  :ensure t)
+#+end_src
+
+An appealing option is to have a mini-floating-buffer displaying the apps to launch.
+
+#+begin_src emacs-lisp
+(defun emacs-counsel-launcher ()
+  "Create and select a frame called emacs-counsel-launcher which consists only of a minibuffer and has specific dimensions. Runs counsel-osx-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
+  (interactive)
+  (with-selected-frame
+    (make-frame '((name . "emacs-counsel-launcher")
+                  (minibuffer . only)
+                  (fullscreen . 0) ; no fullscreen
+                  (undecorated . t) ; remove title bar
+                  ;;(auto-raise . t) ; focus on this frame
+                  ;;(tool-bar-lines . 0)
+                  ;;(menu-bar-lines . 0)
+                  (internal-border-width . 10)
+                  (width . 80)
+                  (height . 11)))
+                  (unwind-protect
+                    (counsel-osx-app)
+                    (delete-frame))))
+#+end_src
+
+Anyway, actually is not used beacuse it seems not good integrated in MacOS (to check further).
 
 * Keybindings discovery
 

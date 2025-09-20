@@ -1,0 +1,219 @@
+#+TITLE: My Neovim configuration
+#+AUTHOR: Samuele Paglia
+#+DESCRIPTION: My Neovim configuration from scratch
+#+STARTUP: showeverything
+#+OPTIONS: toc:2
+#+PROPERTY: header-args:lua :tangle yes
+
+* Introduction
+
+Yeah, my Neovim configuration is written by means of Emacs in Org Mode. I love it.
+
+I like tinkering my environments, so instead of relying on an 'opinionated' Neovim distribution, I chose to build my own Neovim ecosystem from scratch while documenting the whole process. And honestly, what better tool for that than Emacs with Org Mode?!
+
+So, from now on this document will be structured as my Neovim configuration, with explanations for every single bit I add (otherwise I'd totally forget about it in a week or so).
+
+---
+https://www.youtube.com/watch?v=CuWfgiwI73Q&t=4s&ab_channel=TJDeVries
+https://martinlwx.github.io/en/config-neovim-from-scratch
+https://github.com/MartinLwx/dotfiles/tree/main/nvim
+---
+
+All that being said, let's begin.
+
+* Neovim configuration
+
+** init section
+:PROPERTIES:
+:header-args:lua: :tangle init.lua
+:END:
+
+The `init.lua` file is the main configuration file in Neovim, analogous to Vim's `.vimrc`, but written in Lua instead of Vimscript. Using Lua instead of Vimscript gives us better performance, modern scripting features, and easier modularization.
+
+If you want, you could put your entire Neovim configuration in `init.lua`, but I prefer to split it into multiple files. This approach keeps things cleaner and easier to manage.
+
+Here's how I've organized my entire configuration:
+
+#+begin_src shell
+nvim/
+│
+├─ init.lua          # Entry point, requires other Lua files
+├─ lua/
+│   ├─ options.lua   # Global Neovim options
+│   ├─ keymaps.lua   # Keymapping
+│   ├─ plugins.lua   # Plugin management
+│   ├─ theme.lua     # Theme / color scheme
+│   └─ lsp.lua       # LSP configuration
+└─ README.org        # Documentation / literate Org-mode file
+#+end_src
+
+Following a modular design, the `init.lua` file acts as the entry point loading all the necessary modules:
+
+#+begin_src lua
+-- Load keymappings
+require("keymaps")
+
+-- Load options
+require("options")
+
+-- Load lazy.nvim (package manager)
+require("plugin_manager")
+
+-- Set theme
+require("theme")
+
+-- Set LSP
+require("lsp")
+#+end_src
+
+** Key mappings
+:PROPERTIES:
+:header-args:lua: :tangle lua/keymaps.lua
+:END:
+
+Being Neovim configured in Lua, it might be handy to have the possibility to execute an entire lua code file, a line or a region written in Lua. In fact, this enable us to execute the code related to the configuration being added and see the immediate impact.
+
+Whenever we make changes to `init.lua`, we can either restart Neovim or, more easily, run `:source %` (or `:so %`) right inside Neovim to apply them. The `:source` command executes the content of the file passed as a parameter, which in our case is the file we're currently editing; in fact, the `%` automatically gets replaced with its name.
+
+To make it easy to execute Lua code — whether an entire file, a region, or a single line — Ive set up some key mappings in the `:keymaps.lua` module:
+
+#+begin_src lua
+-- ------------------ --
+-- Lua code execution --
+-- ------------------ --
+
+-- E(x)ecute the entire Lua (f)ile
+vim.keymap.set("n", "<space>xf", "<cmd>source %<CR>")
+-- E(x)ecute the Lua (l)ine you're currently on
+vim.keymap.set("n", "<space>xl", ":.lua<CR>")
+-- E(x)ecute the Lua (r)egion selected in visual mode
+vim.keymap.set("v", "<space>xr", ":lua<CR>")
+#+end_src
+
+The syntax for key bindings is: `vim.keymap.set({mode}, {key}, {action}, {opts})`. To dig deeper: `:h vim.keymap.set`. 
+
+#+begin_src lua
+-- kickstart
+-- Clear highlights on search when pressing <Esc> in normal mode
+--  See `:help hlsearch`
+vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
+#+end_src
+
+* Options
+:PROPERTIES:
+:header-args:lua: :tangle lua/options.lua
+:END:
+
+In the `options.lua` module all the global options are configured:
+
+#+begin_src lua
+set = vim.opt
+
+set.clipboard = 'unnamedplus'   -- use the system clipboard
+vim.opt.completeopt = {'menu', 'menuone', 'noselect'}  -- completion options for better UX
+vim.opt.mouse = 'a'                 -- enable mouse support in all modes
+
+-- Tab
+vim.opt.tabstop = 4                 -- number of visual spaces per TAB
+vim.opt.softtabstop = 4             -- number of spaces in tab when editing
+vim.opt.shiftwidth = 4              -- insert 4 spaces on a tab
+vim.opt.expandtab = true            -- tabs are spaces, mainly because of Python
+
+-- UI config
+vim.opt.number = true               -- show absolute number
+vim.opt.relativenumber = true       -- add numbers to each line on the left side
+vim.opt.cursorline = true           -- highlight cursor line underneath the cursor horizontally
+vim.opt.splitbelow = true           -- open new vertical split at the bottom
+vim.opt.splitright = true           -- open new horizontal splits at the right right
+
+-- Searching
+vim.opt.incsearch = true            -- search as characters are entered
+vim.opt.hlsearch = false            -- do not highlight matches
+vim.opt.ignorecase = true           -- ignore case in searches by default
+vim.opt.smartcase = true            -- but make it case sensitive if an uppercase is entered
+#+end_src
+
+To get more information about a specific option, we can use `:h <option>` in Neovim.
+
+* Neovim keymaps
+:PROPERTIES:
+:header-args:lua: :tangle lua/plugins.lua
+:END:
+
+* Neovim package manager
+:PROPERTIES:
+:header-args:lua: :tangle lua/plugins.lua
+:END:
+
+* Neovim theme
+:PROPERTIES:
+:header-args:lua: :tangle lua/plugins.lua
+:END:
+
+* Neovim LSP
+:PROPERTIES:
+:header-args:lua: :tangle lua/plugins.lua
+:END:
+
+
+
+
+
+
+
+
+* Neovim Configuration
+
+To try / experiment a different Neovim configuration the [NVIM_APPNAME](https://neovim.io/doc/user/starting.html#%24NVIM_APPNAME) environment variable can be used.
+
+#+begin_src shell
+NVIM_APPNAME=try-nvim nvim
+#+end_src
+
+The Neovim configuration files will be searched into `$HOME/.config/try-nvim`.
+
+* Building my Neovim ecosystem
+
+
+Here follows a table of my needs and how I tried to sutisfy it in Neovim:
+
+| Requirement    | Solution                  | Notes |
+|----------------+---------------------------+-------|
+| Plugin Manager | [[https://github.com/folke/lazy.nvim][lazy.nvim]]                 |       |
+| Plugin Manager |                           |       |
+| Plugin Manager |                           |       |
+| Plugin Manager |                           |       |
+| Plugin Manager |                           |       |
+| Plugin Manager |                           |       |
+| Plugin Manager |                           |       |
+| Plugin Manager |                           |       |
+| Plugin Manager |                           |       |
+| Plugin Manager | hhhhhhhhhhhhhhhhhhhhhhhhh |       |
+
+* Help
+
+- Using the `:lua` command followed by an equal sign and the table name you are looking for - i.e., `:lua =vim`, `:lua =vim.api` - you'll be able to see its content.
+- The `:help` command is the way to go con consult Neovim documentation about a function in a quicker way.
+
+
+* Refs
+
+In this section are listed all the resources used to create my Neovim configuration.
+
+Docs:
+  - [Neovim documentation](https://neovim.io/doc/)
+
+Learn Lua:
+  - [x] Quickstart: https://www.youtube.com/watch?v=CuWfgiwI73Q&t=4s&ab_channel=TJDeVries
+  - [ ] Beginner: https://learnxinyminutes.com/lua/
+  - [ ] Intermediate: https://ebens.me/posts/lua-for-programmers-part-1/
+
+Interesting guides:
+  - [Transform Your Neovim into an IDE: A Step-by-Step Guide](https://martinlwx.github.io/en/config-neovim-from-scratch)
+
+Interesting dotfiles repos from neovim core mantainers:
+  - [MariaSolOs/dotfiles](https://github.com/MariaSolOs/dotfiles)
+  - [folke/dot](https://github.com/folke/dot)
+  - [tjdevries/config.nvim](https://github.com/tjdevries/config.nvim)
+
+I really like the MartinLwx's neovim structure configuration (see [here](https://github.com/MartinLwx/dotfiles/tree/main/nvim)).

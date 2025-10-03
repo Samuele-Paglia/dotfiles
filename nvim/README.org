@@ -3,7 +3,7 @@
 #+DESCRIPTION: My Neovim configuration from scratch
 #+STARTUP: showeverything
 #+OPTIONS: toc:2
-#+PROPERTY: header-args:lua :tangle yes
+##aksdjfkafj +PROPERTY: header-args:lua :tangle yes
 
 * Introduction
 
@@ -11,9 +11,10 @@ Yeah, my Neovim configuration is written by means of Emacs in Org Mode. I love i
 
 I like tinkering my environments, so instead of relying on an 'opinionated' Neovim distribution, I chose to build my own Neovim ecosystem from scratch while documenting the whole process. And honestly, what better tool for that than Emacs with Org Mode?!
 
-So, from now on this document will be structured as my Neovim configuration, with explanations for every single bit I add (otherwise I'd totally forget about it in a week or so).
+So, starting from the next section this documentation will be structured as my Neovim configuration, with explanations for every single bit I add (otherwise I'd totally forget about it in a week or so).
 
----
+I'm a Vim user, I wrote my bachelor and master degree thesis in Computer Engineering in LaTeX and Emacs Org Mode, rispectively. I'm not a Neovim experienced user by any means, so I'm going to build my own Neovim configuration from scratch (literally from scratch) while writing this documentation, adopting a /documentation as code/ like approach. All the Lua code blocks in this documentation, according to the section they belong to, will be exported / tangled (in Org Mode, using /Cc Ct v/) and used by Neovim as its configuration.
+
 https://www.youtube.com/watch?v=CuWfgiwI73Q&t=4s&ab_channel=TJDeVries
 https://martinlwx.github.io/en/config-neovim-from-scratch
 https://github.com/MartinLwx/dotfiles/tree/main/nvim

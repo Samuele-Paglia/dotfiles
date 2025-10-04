@@ -1,0 +1,262 @@
+#+TITLE: Git Configuration
+#+AUTHOR: Samuele Paglia
+#+DESCRIPTION: My Git configuration using literate programming
+#+STARTUP: showeverything
+#+OPTIONS: toc:2
+
+* Table of contents :toc:
+- [[#introduction][Introduction]]
+- [[#configuration][Configuration]]
+  - [[#user-information][User Information]]
+  - [[#aliases][Aliases]]
+  - [[#column-display][Column Display]]
+  - [[#branch-sorting][Branch Sorting]]
+  - [[#tag-sorting][Tag Sorting]]
+  - [[#default-branch][Default Branch]]
+  - [[#diff-settings][Diff Settings]]
+  - [[#push-settings][Push Settings]]
+  - [[#pull-settings][Pull Settings]]
+  - [[#fetch-settings][Fetch Settings]]
+  - [[#help-settings][Help Settings]]
+  - [[#commit-settings][Commit Settings]]
+  - [[#rerere-settings][Rerere Settings]]
+  - [[#core-settings][Core Settings]]
+  - [[#merge-settings][Merge Settings]]
+  - [[#git-lfs-filter][Git LFS Filter]]
+
+* Introduction
+
+My Git configuration is written using Emacs Org Mode following a literate programming approach. This allows me to document every configuration choice while maintaining the actual =.gitconfig= file through tangling.
+
+Git is a distributed version control system used for tracking changes in source code during software development.
+
+All the configuration code blocks in this document will be tangled to =.gitconfig= using Org Mode's tangling feature (=C-c C-v t=).
+
+* Configuration
+:PROPERTIES:
+:header-args:conf: :tangle .gitconfig
+:END:
+
+This is Git's per-user configuration file.
+
+#+begin_src conf
+# This is Git's per-user configuration file.
+#+end_src
+
+** User Information
+
+Set the user name and email for Git commits:
+
+#+begin_src conf
+[user]
+  name = Samuele Paglia
+  email = sml.pgl@gmail.com
+#+end_src
+
+** Aliases
+
+Define convenient shortcuts for common Git commands:
+
+- =st=: Short status output
+- =lol=: One-line log with graph showing all branches
+
+#+begin_src conf
+
+[alias]
+  st = status -s
+  lol = log --oneline --graph --all
+#+end_src
+
+** Column Display
+
+Enable automatic column display for listings (branches, tags, etc.):
+
+#+begin_src conf
+
+# Listing branches and tags in columns
+[column]
+  ui = auto
+#+end_src
+
+** Branch Sorting
+
+Sort branches by commit date (most recent first) instead of alphabetically:
+
+#+begin_src conf
+
+# Listing branches based on the last commit date
+# insted of alphabetical order
+[branch]
+  sort = -committerdate
+#+end_src
+
+** Tag Sorting
+
+Sort tags using version number ordering rather than alphabetical:
+
+#+begin_src conf
+
+# Sort tags treating numbers not in alphabetical order
+[tag]
+  sort = version:refname
+#+end_src
+
+** Default Branch
+
+Set the default branch name to =main= for new repositories:
+
+#+begin_src conf
+
+# Setting the default branch to 'main'
+[init]
+  defaultBranch = main
+#+end_src
+
+** Diff Settings
+
+Configure diff behavior for better readability and accuracy:
+
+- =algorithm=: Use histogram algorithm for more intuitive diffs
+- =colorMoved=: Highlight moved lines differently
+- =mnemonicPrefix=: Use 'i' and 'w' prefixes (index and working directory)
+- =renames=: Detect file renaming
+
+#+begin_src conf
+
+# Setting the diff behaviour, specifically:
+#   - choosing a different algorithm from the default
+#     one to compute diffs
+#   - coloring differently moved lines
+#   - prefix setting to 'i' and 'w' (index and working directory)
+#   - detecing file renaming
+[diff]
+  algorithm = histogram
+  colorMoved = plain
+  mnemonicPrefix = true
+  renames = true
+#+end_src
+
+** Push Settings
+
+Configure push behavior:
+
+- =autoSetupRemote=: Automatically set up remote tracking for new branches
+- =followTags=: Push annotated tags when pushing commits (commented out)
+
+#+begin_src conf
+
+# The followTags, if set to true, allows to push any
+# tags when pushing commits
+[push]
+  autoSetupRemote = true
+  #followTags = true
+#+end_src
+
+** Pull Settings
+
+Set pull to use rebase instead of merge by default:
+
+#+begin_src conf
+
+[pull]
+  rebase = true
+#+end_src
+
+** Fetch Settings
+
+Automatically prune stale remote-tracking references and tags:
+
+#+begin_src conf
+
+# Pruning dead reference to branch and tags
+# no more existing on the remote
+[fetch]
+  prune = true
+  pruneTags = true
+#+end_src
+
+** Help Settings
+
+Enable autocorrect with prompt for mistyped commands:
+
+#+begin_src conf
+
+[help]
+  autocorrect = prompt
+#+end_src
+
+** Commit Settings
+
+Show diff in commit message editor to review changes while writing commit messages:
+
+#+begin_src conf
+
+[commit]
+  verbose = true
+#+end_src
+
+** Rerere Settings
+
+Enable "reuse recorded resolution" to automatically resolve previously resolved merge conflicts:
+
+- =enabled=: Turn on rerere functionality
+- =autoupdate=: Automatically stage rerere-resolved conflicts
+
+#+begin_src conf
+
+# Enable reuse recorde resolution during merging / rebasing
+[rerere]
+  enabled = true
+  autoupdate = true
+#+end_src
+
+** Core Settings
+
+Set the path to the global gitignore file:
+
+#+begin_src conf
+
+# Path pointing to the file to take into
+# account for file exclusion
+[core]
+  excludesFile = $HOME/.config/git/gitignore
+#+end_src
+
+** Merge Settings
+
+Use zdiff3 conflict style which shows the original base version alongside both versions:
+
+#+begin_src conf
+
+[merge]
+  conflictstyle = zdiff3
+#+end_src
+
+** Rebase Settings
+
+Advanced rebase settings (commented out):
+
+- =autoSquash=: Automatically squash commits marked with fixup!/squash!
+- =autoStash=: Automatically stash and unstash working directory
+- =updateRefs=: Update branch pointers for rebased commits
+
+#+begin_src conf
+
+#[rebase]
+  #autoSquash = true
+  #autoStash = true
+  #updateRefs = true
+#+end_src
+
+** Git LFS Filter
+
+Configuration for Git Large File Storage (LFS) filter:
+
+#+begin_src conf
+
+[filter "lfs"]
+  clean = git-lfs clean -- %f
+  smudge = git-lfs smudge -- %f
+  process = git-lfs filter-process
+  required = true
+#+end_src

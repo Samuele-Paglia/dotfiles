@@ -1,0 +1,106 @@
+#+TITLE: WezTerm Configuration
+#+AUTHOR: Samuele Paglia
+#+DESCRIPTION: My WezTerm terminal emulator configuration
+#+STARTUP: showeverything
+#+OPTIONS: toc:2
+
+* Table of contents :toc:
+- [[#introduction][Introduction]]
+- [[#installation][Installation]]
+- [[#configuration][Configuration]]
+  - [[#wezterm-api-initialization][WezTerm API Initialization]]
+  - [[#appearance-settings][Appearance Settings]]
+  - [[#font-configuration][Font Configuration]]
+  - [[#return-configuration][Return Configuration]]
+
+* Introduction
+
+My WezTerm configuration is written using Emacs Org Mode following a literate programming approach. WezTerm is a GPU-accelerated cross-platform terminal emulator and multiplexer written in Rust.
+
+The configuration file is written in Lua and provides a rich set of customization options for appearance, fonts, and behavior.
+
+All the Lua code blocks in this document will be tangled to =wezterm.lua= using Org Mode's tangling feature (=C-c C-v t=).
+
+* Installation
+
+MacOS installation using Homebrew:
+
+#+begin_src shell
+brew install --cask wezterm
+#+end_src
+
+The wezterm configuration file is written in Lua.
+
+To list all system installed fonts, wezterm provides the following command:
+
+#+begin_src shell
+wezterm ls-fonts --list-system
+#+end_src
+
+* Configuration
+:PROPERTIES:
+:header-args:lua: :tangle wezterm.lua
+:END:
+
+** WezTerm API Initialization
+
+First, we need to load the WezTerm API and create a configuration builder object. The config builder provides validation and better error messages:
+
+#+begin_src lua
+-- Use wezterm API
+local wezterm = require("wezterm")
+local config = wezterm.config_builder()
+#+end_src
+
+** Appearance Settings
+
+Configure the visual appearance of the terminal window:
+
+The =window_decorations= option set to "RESIZE" removes the title bar but keeps the ability to resize the window.
+
+The =hide_tab_bar_if_only_one_tab= option provides a cleaner interface when working with a single tab.
+
+The =color_scheme= sets the color theme. Catppuccin Mocha is a soothing pastel theme.
+
+The =window_background_opacity= makes the window slightly transparent (0.9 = 90% opaque).
+
+The =window_padding= removes all padding around the terminal content:
+
+#+begin_src lua
+
+-- Appearance
+config.window_decorations = "RESIZE"
+config.hide_tab_bar_if_only_one_tab = true
+config.color_scheme = "Catppuccin Mocha"
+config.window_background_opacity = 0.9
+--config.macos_window_background_blur = 10
+config.window_padding = {
+	left = 0,
+	right = 0,
+	top = 0,
+	bottom = 0,
+}
+#+end_src
+
+** Font Configuration
+
+Configure the font family and size used in the terminal:
+
+JetBrains Mono is a monospaced font designed for developers, with excellent ligature support and readability.
+
+#+begin_src lua
+
+-- Font
+config.font = wezterm.font("JetBrains Mono")
+config.font_size = 12
+--config.line_height = 1.2 -- Not applied for a bug, introduces unexpected bottom padding
+#+end_src
+
+** Return Configuration
+
+Finally, return the configuration object so WezTerm can use it:
+
+#+begin_src lua
+
+return config
+#+end_src

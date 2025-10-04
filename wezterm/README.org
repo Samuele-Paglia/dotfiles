@@ -67,7 +67,6 @@ The =window_background_opacity= makes the window slightly transparent (0.9 = 90%
 The =window_padding= removes all padding around the terminal content:
 
 #+begin_src lua
-
 -- Appearance
 config.window_decorations = "RESIZE"
 config.hide_tab_bar_if_only_one_tab = true
@@ -89,7 +88,6 @@ Configure the font family and size used in the terminal:
 JetBrains Mono is a monospaced font designed for developers, with excellent ligature support and readability.
 
 #+begin_src lua
-
 -- Font
 config.font = wezterm.font("JetBrains Mono")
 config.font_size = 12
@@ -101,6 +99,5 @@ config.font_size = 12
 Finally, return the configuration object so WezTerm can use it:
 
 #+begin_src lua
-
 return config
 #+end_src

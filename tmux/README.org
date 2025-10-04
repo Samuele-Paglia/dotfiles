@@ -58,7 +58,7 @@ Once TPM is installed, you'll be able to:
 
 * Main Configuration
 :PROPERTIES:
-:header-args:conf: :tangle tmux.conf
+:header-args:conf: :epilogue "\n" :tangle tmux.conf
 :END:
 
 The main =tmux.conf= file serves as the entry point for the TMUX configuration. It sources the other modular configuration files and manages plugins.
@@ -80,7 +80,6 @@ source-file ~/.config/tmux/tmux-global-options.conf
 Now we define the plugins we want to use. The =tmux-resurrect= plugin allows us to save and restore tmux sessions, while =tmux-continuum= automatically saves sessions at regular intervals:
 
 #+begin_src conf
-
 # Plugins
 set -g @plugin 'tmux-plugins/tpm'
 set -g @plugin 'tmux-plugins/tmux-resurrect'
@@ -90,7 +89,7 @@ set -g @plugin 'tmux-plugins/tmux-continuum'
 Configure TPM key bindings for plugin management:
 
 #+begin_src conf
-
+# Key bindings for TPM
 set -g @tpm-update 'u'
 set -g @tpm-clean 'U'
 #+end_src
@@ -98,14 +97,13 @@ set -g @tpm-clean 'U'
 Finally, initialize the TMUX plugin manager. This must be the last line:
 
 #+begin_src conf
-
 # Initialize TMUX plugin manager
 run '~/.config/tmux/plugins/tpm/tpm'
 #+end_src
 
 * Key Bindings
 :PROPERTIES:
-:header-args:conf: :tangle tmux-key-bindings.conf
+:header-args:conf: :epilogue "\n" :tangle tmux-key-bindings.conf
 :END:
 
 This section contains all custom key bindings for TMUX. The default prefix key is =C-b= (Control + b).
@@ -123,7 +121,6 @@ Note: You can use =:list-keys= to check for key binding conflicts.
 Reload the TMUX configuration with =prefix= + =R= (useful after making changes):
 
 #+begin_src conf
-
 # Reload configuration
 unbind R
 bind-key R source-file ~/.config/tmux/tmux.conf \; display-message "Reload source-file: done"
@@ -134,7 +131,6 @@ bind-key R source-file ~/.config/tmux/tmux.conf \; display-message "Reload sourc
 Choose a session interactively or detach from the current session:
 
 #+begin_src conf
-
 # Choose and detach session
 bind S choose-session
 bind d detach
@@ -145,7 +141,6 @@ bind d detach
 In copy mode, use =v= to begin selection (vim-like behavior):
 
 #+begin_src conf
-
 # Start copy mode with v (vim like)
 bind -T copy-mode-vi 'v' send-keys -X begin-selection
 #+end_src
@@ -155,7 +150,6 @@ bind -T copy-mode-vi 'v' send-keys -X begin-selection
 Navigate between windows, create new named windows, and rename existing ones:
 
 #+begin_src conf
-
 # Window navigation, creation and renaming
 bind -r h previous-window
 bind -r l next-window
@@ -170,7 +164,6 @@ bind r command-prompt "rename-window %%"
 Use vim-like navigation keys (=h=, =j=, =k=, =l=) with =Ctrl= to move between panes. The =-n= flag means no prefix is needed:
 
 #+begin_src conf
-
 # Pane navigation
 bind -n C-h select-pane -L
 bind -n C-j select-pane -D

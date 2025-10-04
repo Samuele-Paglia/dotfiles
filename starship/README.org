@@ -57,7 +57,7 @@ starship init fish | source
 
 Currently using the default Starship configuration with no customizations. The default configuration provides a clean, informative prompt with git status, language versions, and command duration.
 
-When you want to customize the prompt, you can add TOML configuration blocks below. See the Starship documentation for available options: https://starship.rs/config/
+When you want to customize the prompt, you can add TOML configuration blocks below. See the Starship documentation for available options: https://starship.rs/config/.
 
 Example customizations you might want to add:
 - Format string customization

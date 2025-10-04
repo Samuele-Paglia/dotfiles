@@ -1,0 +1,63 @@
+#+TITLE: Font Installation with Mise
+#+AUTHOR: Samuele Paglia
+#+DESCRIPTION: Automated font installation for dotfiles
+#+STARTUP: showeverything
+#+OPTIONS: toc:2
+
+* Table of contents :toc:
+- [[#introduction][Introduction]]
+- [[#configuration][Configuration]]
+
+* Introduction
+
+This mise configuration handles font installation required by various tools in the dotfiles setup, particularly for terminal emulators like WezTerm and terminal multiplexers like tmux.
+
+The primary font used across the dotfiles is **JetBrains Mono Nerd Font**, which provides:
+- Excellent readability for coding
+- Programming ligatures support
+- Complete Nerd Font icon coverage for terminal UI elements
+- Monospaced design ideal for terminals and editors
+
+All code blocks in this document will be tangled to =mise.toml= using =C-c C-v t=.
+
+* Configuration
+:PROPERTIES:
+:header-args:toml: :tangle mise.toml
+:END:
+
+Install JetBrains Mono Nerd Font using Homebrew cask:
+
+#+begin_src toml
+# Font installation for dotfiles
+# This configuration installs fonts required by terminal emulators and editors
+
+[tools]
+# JetBrains Mono Nerd Font - Primary font for all terminal and editor usage
+# Includes programming ligatures and Nerd Font icons
+"brew:font-jetbrains-mono-nerd-font" = { type = "cask" }
+
+# Additional Nerd Fonts (optional, uncomment if needed)
+# "brew:font-hack-nerd-font" = { type = "cask" }
+# "brew:font-fira-code-nerd-font" = { type = "cask" }
+# "brew:font-meslo-lg-nerd-font" = { type = "cask" }
+#+end_src
+
+** Usage
+
+After tangling, fonts will be automatically installed when running =mise install= from the main dotfiles directory.
+
+To verify font installation:
+
+#+begin_src shell
+# List all Nerd Fonts
+brew search nerd-font
+
+# Verify JetBrains Mono Nerd Font is installed
+brew list --cask | grep jetbrains
+#+end_src
+
+In WezTerm, list all installed fonts:
+
+#+begin_src shell
+wezterm ls-fonts --list-system
+#+end_src

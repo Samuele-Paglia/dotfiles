@@ -50,7 +50,6 @@ AeroSpace tries to find the custom config in two locations:
 Enable AeroSpace to start automatically at login:
 
 #+begin_src toml
-
 # Start AeroSpace at login
 start-at-login = true
 #+end_src
@@ -60,7 +59,6 @@ The =after-login-command= runs commands after login to macOS user session. Note 
 Available commands: https://nikitabobko.github.io/AeroSpace/commands
 
 #+begin_src toml
-
 # You can use it to add commands that run after login to macOS user session.
 # 'start-at-login' needs to be 'true' for 'after-login-command' to work
 # Available commands: https://nikitabobko.github.io/AeroSpace/commands
@@ -70,7 +68,6 @@ after-login-command = []
 The =after-startup-command= runs after AeroSpace startup (after =after-login-command=):
 
 #+begin_src toml
-
 # You can use it to add commands that run after AeroSpace startup.
 # 'after-startup-command' is run after 'after-login-command'
 # Available commands : https://nikitabobko.github.io/AeroSpace/commands
@@ -84,7 +81,6 @@ Normalizations help maintain a clean and predictable window tree structure.
 See: https://nikitabobko.github.io/AeroSpace/guide#normalization
 
 #+begin_src toml
-
 # Normalizations. See: https://nikitabobko.github.io/AeroSpace/guide#normalization
 enable-normalization-flatten-containers = true
 enable-normalization-opposite-orientation-for-nested-containers = true
@@ -99,7 +95,6 @@ See: https://nikitabobko.github.io/AeroSpace/guide#layouts
 The =accordion-padding= specifies the size of accordion padding. You can set it to 0 to disable the padding feature:
 
 #+begin_src toml
-
 # See: https://nikitabobko.github.io/AeroSpace/guide#layouts
 # The 'accordion-padding' specifies the size of accordion padding
 # You can set 0 to disable the padding feature
@@ -109,7 +104,6 @@ accordion-padding = 30
 Set the default root container layout. Possible values: =tiles= or =accordion=:
 
 #+begin_src toml
-
 # Possible values: tiles|accordion
 default-root-container-layout = 'tiles'
 #+end_src
@@ -119,7 +113,6 @@ Set the default root container orientation. Possible values: =horizontal=, =vert
 With =auto=, wide monitors (wider than tall) get horizontal orientation, and tall monitors (taller than wide) get vertical orientation:
 
 #+begin_src toml
-
 # Possible values: horizontal|vertical|auto
 # 'auto' means: wide monitor (anything wider than high) gets horizontal orientation,
 #               tall monitor (anything higher than wide) gets vertical orientation
@@ -134,7 +127,6 @@ See: https://nikitabobko.github.io/AeroSpace/guide#on-focus-changed-callbacks
 See: https://nikitabobko.github.io/AeroSpace/commands#move-mouse
 
 #+begin_src toml
-
 # Mouse follows focus when focused monitor changes
 # Drop it from your config, if you don't like this behavior
 # See https://nikitabobko.github.io/AeroSpace/guide#on-focus-changed-callbacks
@@ -148,7 +140,6 @@ Automatically unhide macOS hidden apps. This effectively turns off macOS "Hide a
 See: https://nikitabobko.github.io/AeroSpace/goodies#disable-hide-app
 
 #+begin_src toml
-
 # You can effectively turn off macOS "Hide application" (cmd-h) feature by toggling this flag
 # Useful if you don't use this macOS feature, but accidentally hit cmd-h or cmd-alt-h key
 # Also see: https://nikitabobko.github.io/AeroSpace/goodies#disable-hide-app
@@ -162,7 +153,6 @@ Set the keyboard layout preset. Possible values: =qwerty=, =dvorak=, or =colemak
 See: https://nikitabobko.github.io/AeroSpace/guide#key-mapping
 
 #+begin_src toml
-
 # Possible values: (qwerty|dvorak|colemak)
 # See https://nikitabobko.github.io/AeroSpace/guide#key-mapping
 [key-mapping]
@@ -181,7 +171,6 @@ Possible values:
 See: https://nikitabobko.github.io/AeroSpace/guide#assign-workspaces-to-monitors
 
 #+begin_src toml
-
 # Gaps between windows (inner-*) and between monitor edges (outer-*).
 # Possible values:
 # - Constant:     gaps.outer.top = 8
@@ -219,7 +208,6 @@ All possible modifiers: cmd, alt, ctrl, shift
 All possible commands: https://nikitabobko.github.io/AeroSpace/commands
 
 #+begin_src toml
-
 # 'main' binding mode declaration
 # See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes
 # 'main' binding mode must be always presented
@@ -260,7 +248,6 @@ Switch between different layout modes:
 See: https://nikitabobko.github.io/AeroSpace/commands#layout
 
 #+begin_src toml
-
     # Switch between layouts
     # See: https://nikitabobko.github.io/AeroSpace/commands#layout
     alt-t = 'layout tiles horizontal vertical'
@@ -274,7 +261,6 @@ Navigate focus between windows using vim-like keys (h, j, k, l):
 See: https://nikitabobko.github.io/AeroSpace/commands#focus
 
 #+begin_src toml
-
     # See: https://nikitabobko.github.io/AeroSpace/commands#focus
     alt-h = 'focus left'
     alt-j = 'focus down'
@@ -289,7 +275,6 @@ Move windows between positions using alt-shift and vim-like keys:
 See: https://nikitabobko.github.io/AeroSpace/commands#move
 
 #+begin_src toml
-
     # See: https://nikitabobko.github.io/AeroSpace/commands#move
     alt-shift-h = 'move left'
     alt-shift-j = 'move down'
@@ -304,7 +289,6 @@ Resize windows smartly using alt-ctrl-j/k:
 See: https://nikitabobko.github.io/AeroSpace/commands#resize
 
 #+begin_src toml
-
     # See: https://nikitabobko.github.io/AeroSpace/commands#resize
     alt-ctrl-j = 'resize smart -50'
     alt-ctrl-k = 'resize smart +50'
@@ -317,7 +301,6 @@ Switch to workspaces 1-9 using custom key mappings (a, s, d, f, g for workspaces
 See: https://nikitabobko.github.io/AeroSpace/commands#workspace
 
 #+begin_src toml
-
     # See: https://nikitabobko.github.io/AeroSpace/commands#workspace
     alt-a = 'workspace 1'
     alt-s = 'workspace 2'
@@ -337,7 +320,6 @@ Move the current window to a specific workspace using alt-shift:
 See: https://nikitabobko.github.io/AeroSpace/commands#move-node-to-workspace
 
 #+begin_src toml
-
     # See: https://nikitabobko.github.io/AeroSpace/commands#move-node-to-workspace
     alt-shift-a = 'move-node-to-workspace 1'
     alt-shift-s = 'move-node-to-workspace 2'
@@ -358,7 +340,6 @@ See: https://nikitabobko.github.io/AeroSpace/commands#workspace-back-and-forth
 See: https://nikitabobko.github.io/AeroSpace/commands#move-workspace-to-monitor
 
 #+begin_src toml
-
     # See: https://nikitabobko.github.io/AeroSpace/commands#workspace-back-and-forth
     alt-tab = 'workspace-back-and-forth'
     # See: https://nikitabobko.github.io/AeroSpace/commands#move-workspace-to-monitor
@@ -384,7 +365,6 @@ The =service= binding mode provides advanced operations like reloading config, r
 See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes
 
 #+begin_src toml
-
 # 'service' binding mode declaration.
 # See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes
 [mode.service.binding]

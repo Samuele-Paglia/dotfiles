@@ -1,0 +1,72 @@
+#+TITLE: Starship Configuration
+#+AUTHOR: Samuele Paglia
+#+DESCRIPTION: My Starship shell prompt configuration
+#+STARTUP: showeverything
+#+OPTIONS: toc:2
+
+* Table of contents :toc:
+- [[#introduction][Introduction]]
+- [[#installation][Installation]]
+- [[#configuration][Configuration]]
+
+* Introduction
+
+My Starship configuration is written using Emacs Org Mode following a literate programming approach. Starship is a minimal, fast, and customizable prompt for any shell.
+
+The configuration file uses TOML format and provides extensive customization for the shell prompt appearance and behavior.
+
+All the TOML code blocks in this document will be tangled to =starship.toml= using Org Mode's tangling feature (=C-c C-v t=).
+
+Documentation: https://starship.rs
+
+* Installation
+
+MacOS installation using Homebrew:
+
+#+begin_src shell
+brew install starship
+#+end_src
+
+After starship's installation, add the init script to the shell's configuration file:
+
+For Zsh, add to =~/.zshrc=:
+
+#+begin_src shell
+# ~/.zshrc
+eval "$(starship init zsh)"
+#+end_src
+
+For Bash, add to =~/.bashrc=:
+
+#+begin_src shell
+# ~/.bashrc
+eval "$(starship init bash)"
+#+end_src
+
+For Fish, add to =~/.config/fish/config.fish=:
+
+#+begin_src shell
+# ~/.config/fish/config.fish
+starship init fish | source
+#+end_src
+
+* Configuration
+:PROPERTIES:
+:header-args:toml: :tangle starship.toml
+:END:
+
+Currently using the default Starship configuration with no customizations. The default configuration provides a clean, informative prompt with git status, language versions, and command duration.
+
+When you want to customize the prompt, you can add TOML configuration blocks below. See the Starship documentation for available options: https://starship.rs/config/
+
+Example customizations you might want to add:
+- Format string customization
+- Module configuration (git, language versions, directory display, etc.)
+- Custom symbols and colors
+- Prompt character customization
+- Command duration thresholds
+
+The tangled file will be empty by default, which tells Starship to use its built-in defaults.
+
+#+begin_src toml
+#+end_src

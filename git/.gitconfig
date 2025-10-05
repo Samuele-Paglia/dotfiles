@@ -1,5 +1,3 @@
-# This is Git's per-user configuration file.
-
 [user]
   name = Samuele Paglia
   email = sml.pgl@gmail.com
@@ -8,37 +6,24 @@
   st = status -s
   lol = log --oneline --graph --all
 
-# Listing branches and tags in columns
 [column]
   ui = auto
 
-# Listing branches based on the last commit date
-# insted of alphabetical order
 [branch]
   sort = -committerdate
 
-# Sort tags treating numbers not in alphabetical order
 [tag]
   sort = version:refname
 
-# Setting the default branch to 'main'
 [init]
   defaultBranch = main
 
-# Setting the diff behaviour, specifically:
-#   - choosing a different algorithm from the default
-#     one to compute diffs
-#   - coloring differently moved lines
-#   - prefix setting to 'i' and 'w' (index and working directory)
-#   - detecing file renaming
 [diff]
   algorithm = histogram
   colorMoved = plain
   mnemonicPrefix = true
   renames = true
 
-# The followTags, if set to true, allows to push any
-# tags when pushing commits
 [push]
   autoSetupRemote = true
   #followTags = true
@@ -46,8 +31,6 @@
 [pull]
   rebase = true
 
-# Pruning dead reference to branch and tags
-# no more existing on the remote
 [fetch]
   prune = true
   pruneTags = true
@@ -58,13 +41,10 @@
 [commit]
   verbose = true
 
-# Enable reuse recorde resolution during merging / rebasing
 [rerere]
   enabled = true
   autoupdate = true
 
-# Path pointing to the file to take into
-# account for file exclusion
 [core]
   excludesFile = $HOME/.config/git/gitignore
 

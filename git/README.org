@@ -39,10 +39,6 @@ All the configuration code blocks in this document will be tangled to =.gitconfi
 
 This is Git's per-user configuration file.
 
-#+begin_src conf
-# This is Git's per-user configuration file.
-#+end_src
-
 ** User Information
 
 Set the user name and email for Git commits:
@@ -61,7 +57,6 @@ Define convenient shortcuts for common Git commands:
 - =lol=: One-line log with graph showing all branches
 
 #+begin_src conf
-
 [alias]
   st = status -s
   lol = log --oneline --graph --all
@@ -72,8 +67,6 @@ Define convenient shortcuts for common Git commands:
 Enable automatic column display for listings (branches, tags, etc.):
 
 #+begin_src conf
-
-# Listing branches and tags in columns
 [column]
   ui = auto
 #+end_src
@@ -83,9 +76,6 @@ Enable automatic column display for listings (branches, tags, etc.):
 Sort branches by commit date (most recent first) instead of alphabetically:
 
 #+begin_src conf
-
-# Listing branches based on the last commit date
-# insted of alphabetical order
 [branch]
   sort = -committerdate
 #+end_src
@@ -95,8 +85,6 @@ Sort branches by commit date (most recent first) instead of alphabetically:
 Sort tags using version number ordering rather than alphabetical:
 
 #+begin_src conf
-
-# Sort tags treating numbers not in alphabetical order
 [tag]
   sort = version:refname
 #+end_src
@@ -106,8 +94,6 @@ Sort tags using version number ordering rather than alphabetical:
 Set the default branch name to =main= for new repositories:
 
 #+begin_src conf
-
-# Setting the default branch to 'main'
 [init]
   defaultBranch = main
 #+end_src
@@ -122,13 +108,6 @@ Configure diff behavior for better readability and accuracy:
 - =renames=: Detect file renaming
 
 #+begin_src conf
-
-# Setting the diff behaviour, specifically:
-#   - choosing a different algorithm from the default
-#     one to compute diffs
-#   - coloring differently moved lines
-#   - prefix setting to 'i' and 'w' (index and working directory)
-#   - detecing file renaming
 [diff]
   algorithm = histogram
   colorMoved = plain
@@ -144,9 +123,6 @@ Configure push behavior:
 - =followTags=: Push annotated tags when pushing commits (commented out)
 
 #+begin_src conf
-
-# The followTags, if set to true, allows to push any
-# tags when pushing commits
 [push]
   autoSetupRemote = true
   #followTags = true
@@ -157,7 +133,6 @@ Configure push behavior:
 Set pull to use rebase instead of merge by default:
 
 #+begin_src conf
-
 [pull]
   rebase = true
 #+end_src
@@ -167,9 +142,6 @@ Set pull to use rebase instead of merge by default:
 Automatically prune stale remote-tracking references and tags:
 
 #+begin_src conf
-
-# Pruning dead reference to branch and tags
-# no more existing on the remote
 [fetch]
   prune = true
   pruneTags = true
@@ -190,7 +162,6 @@ Enable autocorrect with prompt for mistyped commands:
 Show diff in commit message editor to review changes while writing commit messages:
 
 #+begin_src conf
-
 [commit]
   verbose = true
 #+end_src
@@ -203,8 +174,6 @@ Enable "reuse recorded resolution" to automatically resolve previously resolved 
 - =autoupdate=: Automatically stage rerere-resolved conflicts
 
 #+begin_src conf
-
-# Enable reuse recorde resolution during merging / rebasing
 [rerere]
   enabled = true
   autoupdate = true
@@ -215,9 +184,6 @@ Enable "reuse recorded resolution" to automatically resolve previously resolved 
 Set the path to the global gitignore file:
 
 #+begin_src conf
-
-# Path pointing to the file to take into
-# account for file exclusion
 [core]
   excludesFile = $HOME/.config/git/gitignore
 #+end_src
@@ -227,7 +193,6 @@ Set the path to the global gitignore file:
 Use zdiff3 conflict style which shows the original base version alongside both versions:
 
 #+begin_src conf
-
 [merge]
   conflictstyle = zdiff3
 #+end_src
@@ -241,7 +206,6 @@ Advanced rebase settings (commented out):
 - =updateRefs=: Update branch pointers for rebased commits
 
 #+begin_src conf
-
 #[rebase]
   #autoSquash = true
   #autoStash = true
@@ -253,7 +217,6 @@ Advanced rebase settings (commented out):
 Configuration for Git Large File Storage (LFS) filter:
 
 #+begin_src conf
-
 [filter "lfs"]
   clean = git-lfs clean -- %f
   smudge = git-lfs smudge -- %f

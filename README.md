@@ -1,70 +1,61 @@
-# Dotfiles management
+# Dotfiles
 
-My dotfiles are managed by means of [GNU Stow](https://www.gnu.org/software/stow) (see documentation [here](https://www.gnu.org/software/stow/manual/stow.html)).
+Personal dotfiles using **literate programming** (Emacs Org Mode) with **automated setup** (mise + GNU Stow).
 
+## Philosophy
 
-## TL;DR / commands to be executed
+### Literate Programming
+All configurations are written in **`.org` files** combining documentation and code:
+- Code blocks contain minimal comments; explanations are in prose sections
+- Tangle with `C-c C-v t` or `mise run tangle` to generate configs
+- Edit `.org` source files, not generated configs
 
-Clone this repo, install GNU Stow and execute it:
+### Automation
+**[mise](https://mise.jdx.dev/)** handles tool installation and tasks. **[GNU Stow](https://www.gnu.org/software/stow/)** symlinks configs to `~/.config`.
 
-```bash
-git clone https://github.com/Samuele-Paglia/dotfiles.git ~/.dotfiles
-brew install stow
-mkdir -p $HOME/.config
-cd ~/.dotfiles
-stow .
-```
-
-## GNU Stow installation and configuration details
-
-### MacOS Installation
-
-GNU Stow installation for MacOS:
+## Quick Start
 
 ```bash
-brew install stow
+# Clone repo
+git clone https://github.com/Samuele-Paglia/dotfiles.git ~/.dotfiles && cd ~/.dotfiles
+
+# Install & activate mise (add to ~/.zshrc)
+brew install mise && eval "$(mise activate zsh)"
+
+# Install tools and setup dotfiles
+mise run install && mise run setup && mise run setup-tmux
 ```
 
-### Usage
+## Repository Structure
 
-To show what `stow` will do without any change being applied, the following could be executed:
+Each tool has a directory with `README.org` (source) and generated config files:
+
+- **nvim** - Neovim (Lua, lazy.nvim)
+- **tmux** - Terminal multiplexer
+- **wezterm** - Terminal emulator
+- **aerospace** - Window manager (macOS)
+- **starship** - Shell prompt
+- **emacs** - Text editor (elpaca)
+- **git** - Version control config
+- **mise** - Tool automation
+
+## Workflow
+
+1. Edit `.org` files in tool directories
+2. Tangle: `mise run tangle`
+3. Verify: `mise run verify` (dry run)
+4. Apply: `mise run restow` (if needed)
+5. Commit both `.org` and generated files
+
+## Common Tasks
 
 ```bash
-stow --adopt -t ~/.config --simulate --verbose . # or
-stow --adopt -t ~/.config -nv .
+mise run tangle    # Generate all configs from .org files
+mise run install   # Install all tools
+mise run setup     # Symlink configs with stow
+mise run update    # Update all tools
+mise run verify    # Dry run stow configuration
+mise run doctor    # Check installation status
 ```
 
-This command will show all the symlink that will be created in the target directory, `~/.config`, pointing to directories and files present in the folder where it was executed (`.`).
-
->NOTE: The `--adopt` flag could be used if the file to symlink already exists in the target directory. This flag enables the overwrite in the stow directory of the file with the one in the target directory.
-> Verbosity levels can be set from 0 to 5 (i.e., `verbose=3`).
-
-To "de-stow" (unlink) only a specific file / directory, the `-D` (where its opposite flag is `-S` to "stow" files, which is the default behaviour) could be used:
-
- ```bash
-stow -nvDt ~/.config bash
-stow -nDt ~/.config bash
-```
-
-For the provided example, the bash directory in the target `~/.config` directory, that was symlinked with the one present in the stow directory, will be removed.
-
-Multiple stow directories passing are actually supported:
-
-```bash
-stow -v -t ~/.config tmux nvim
-```
-
-To "re-stow" (unlink and link) all the following command could be executed:
-
- ```bash
-stow -nvRt ~/.config bash
-stow -nRt ~/.config bash
-```
-
-### `.stowrc`
-
-The `.stowrc` file can be used to pass flags to stow, in this way the only command to be executed after this repo clone and stow installation (if required) will be:
-
-```bash
-stow .
-```
+See tool-specific `README.org` files for detailed configuration documentation.

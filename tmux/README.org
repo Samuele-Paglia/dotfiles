@@ -58,7 +58,7 @@ Once TPM is installed, you'll be able to:
 
 * Main Configuration
 :PROPERTIES:
-:header-args:conf: :epilogue "\n" :tangle tmux.conf
+:header-args:conf: :tangle tmux.conf
 :END:
 
 The main =tmux.conf= file serves as the entry point for the TMUX configuration. It sources the other modular configuration files and manages plugins.
@@ -66,21 +66,18 @@ The main =tmux.conf= file serves as the entry point for the TMUX configuration. 
 First, we source the key bindings configuration:
 
 #+begin_src conf
-# Sourcing key-bindings
 source-file ~/.config/tmux/tmux-key-bindings.conf
 #+end_src
 
 Then we source the global options:
 
 #+begin_src conf
-# Sourcing global options
 source-file ~/.config/tmux/tmux-global-options.conf
 #+end_src
 
 Now we define the plugins we want to use. The =tmux-resurrect= plugin allows us to save and restore tmux sessions, while =tmux-continuum= automatically saves sessions at regular intervals:
 
 #+begin_src conf
-# Plugins
 set -g @plugin 'tmux-plugins/tpm'
 set -g @plugin 'tmux-plugins/tmux-resurrect'
 set -g @plugin 'tmux-plugins/tmux-continuum'
@@ -89,7 +86,6 @@ set -g @plugin 'tmux-plugins/tmux-continuum'
 Configure TPM key bindings for plugin management:
 
 #+begin_src conf
-# Key bindings for TPM
 set -g @tpm-update 'u'
 set -g @tpm-clean 'U'
 #+end_src
@@ -97,31 +93,23 @@ set -g @tpm-clean 'U'
 Finally, initialize the TMUX plugin manager. This must be the last line:
 
 #+begin_src conf
-# Initialize TMUX plugin manager
 run '~/.config/tmux/plugins/tpm/tpm'
 #+end_src
 
 * Key Bindings
 :PROPERTIES:
-:header-args:conf: :epilogue "\n" :tangle tmux-key-bindings.conf
+:header-args:conf: :tangle tmux-key-bindings.conf
 :END:
 
 This section contains all custom key bindings for TMUX. The default prefix key is =C-b= (Control + b).
 
-Note: You can use =:list-keys= to check for key binding conflicts.
-
-#+begin_src conf
-# Note 1: Use command ':list-keys' to check for conflits
-# Note 2: To remove all keybindings use the following command
-#unbind-key -a
-#+end_src
+Note: You can use =:list-keys= to check for key binding conflicts. To remove all keybindings, use the command =unbind-key -a=.
 
 ** Reload configuration
 
 Reload the TMUX configuration with =prefix= + =R= (useful after making changes):
 
 #+begin_src conf
-# Reload configuration
 unbind R
 bind-key R source-file ~/.config/tmux/tmux.conf \; display-message "Reload source-file: done"
 #+end_src
@@ -131,7 +119,6 @@ bind-key R source-file ~/.config/tmux/tmux.conf \; display-message "Reload sourc
 Choose a session interactively or detach from the current session:
 
 #+begin_src conf
-# Choose and detach session
 bind S choose-session
 bind d detach
 #+end_src
@@ -141,7 +128,6 @@ bind d detach
 In copy mode, use =v= to begin selection (vim-like behavior):
 
 #+begin_src conf
-# Start copy mode with v (vim like)
 bind -T copy-mode-vi 'v' send-keys -X begin-selection
 #+end_src
 
@@ -150,7 +136,6 @@ bind -T copy-mode-vi 'v' send-keys -X begin-selection
 Navigate between windows, create new named windows, and rename existing ones:
 
 #+begin_src conf
-# Window navigation, creation and renaming
 bind -r h previous-window
 bind -r l next-window
 bind - last-window
@@ -164,7 +149,6 @@ bind r command-prompt "rename-window %%"
 Use vim-like navigation keys (=h=, =j=, =k=, =l=) with =Ctrl= to move between panes. The =-n= flag means no prefix is needed:
 
 #+begin_src conf
-# Pane navigation
 bind -n C-h select-pane -L
 bind -n C-j select-pane -D
 bind -n C-k select-pane -U
@@ -176,7 +160,6 @@ bind -n C-l select-pane -R
 Resize panes using vim-like keys (=H=, =J=, =K=, =L=) with =prefix=. The =-r= flag makes the key repeatable:
 
 #+begin_src conf
-# Pane resizing
 bind -r H resize-pane -L 20
 bind -r J resize-pane -D 7
 bind -r K resize-pane -U 7
@@ -186,7 +169,6 @@ bind -r L resize-pane -R 20
 The =z= key toggles pane zoom (maximize/restore). This is the default behavior, included here as a reminder:
 
 #+begin_src conf
-# Default behaviour for 'z' - here as reminder
 bind z resize-pane -Z
 #+end_src
 
@@ -195,7 +177,6 @@ bind z resize-pane -Z
 Swap panes up or down, and synchronize input across all panes in a window:
 
 #+begin_src conf
-# Pane swap and sync
 bind C-j swap-pane -D
 bind C-k swap-pane -U
 bind * setw synchronize-panes
@@ -206,8 +187,6 @@ bind * setw synchronize-panes
 Split the current pane horizontally or vertically, and close windows with confirmation:
 
 #+begin_src conf
-
-# Splitting and closing window
 bind = split-window -v
 bind \| split-window -h
 bind k confirm-before -p "Do you want to close the window '#W'? (y/n)" kill-window
@@ -221,42 +200,38 @@ bind k confirm-before -p "Do you want to close the window '#W'? (y/n)" kill-wind
 This section defines global options and settings for TMUX behavior and appearance.
 
 To list all global options, you can execute these commands in TMUX:
-- =tmux show-options -g= -- global session options
-- =tmux show-window-options -g= -- global window options
-- =tmux show-options -s= -- global tmux server options
+- =tmux show-options -g=: global session options
+- =tmux show-window-options -g=: global window options
+- =tmux show-options -s=: global tmux server options
 
 To show a specific option, add the option name to one of the previous commands. If the option is plugin-specific, add =@= before its name.
 
-#+begin_src conf
-# To list all global options execute:
-#   - tmux show-options -g -- global session options
-#   - tmux show-window-options -g -- global window options
-#   - tmux show-options -s -- global tmux server options
-# To show a specific option add to one of the previous commands
-# the option name you're interested in. If the option is plugin
-# specific, add '@' before its name
-#+end_src
-
 ** General and global options
 
+General TMUX behavior and interface settings:
+
+- *Indexing*: Windows and panes start at index 1 instead of 0 for easier keyboard access
+- *Window renumbering*: Automatically renumber all windows when any window is closed, maintaining sequential order
+- *Status line*: Position the status bar at the top of the terminal
+- *Display time*: Show messages for 2000ms (2 seconds)
+- *Escape time*: Set key sequence delay to 0ms to avoid introducing delays in Neovim
+- *Clipboard*: Enable system clipboard integration
+- *Mouse support*: Enable mouse interaction with panes, windows, and copy mode
+- *Vi mode*: Use vi key bindings when in copy mode
+
+The prefix key remains at the default =C-b= (commented out for reference). Pane border styling is commented out but can be enabled for visual customization.
+
 #+begin_src conf
-
-################################
-#                              #
-#  General and global options  #
-#                              #
-################################
-
-#set -g prefix C-B           # Set prefix
-set -g base-index 1          # Start windows indexing at 1 instead of 0
-setw -g pane-base-index 1    # Start panes indexing at 1 instead of 0
-set -g renumber-windows on   # Renumber all windows when any window is closed
-set -g status-position top   # Position of the status line
-set -g display-time 2000     # Display time set to 2s
-set -g escape-time 0         # Escape time delay set to 0, not introducing delays for nvim
-set -g set-clipboard on      # Use system clipboard
-set -g mouse on              # Enable mouse support
-setw -g mode-keys vi         # Enable vi key-bindings when in copy mode
+#set -g prefix C-B
+set -g base-index 1
+setw -g pane-base-index 1
+set -g renumber-windows on
+set -g status-position top
+set -g display-time 2000
+set -g escape-time 0
+set -g set-clipboard on
+set -g mouse on
+setw -g mode-keys vi
 #set -g pane-active-border-style 'fg=magenta,bg=default'
 #set -g pane-border-style 'fg=brightblack,bg=default'
 #+end_src
@@ -265,26 +240,16 @@ setw -g mode-keys vi         # Enable vi key-bindings when in copy mode
 
 These settings ensure proper color support when using TMUX with modern terminal emulators that support 256 colors and true color.
 
+The =default-terminal= setting tells applications inside Tmux that the terminal supports 256 colors. This makes =$TERM= return =screen-256color= instead of the default =tmux-256color=.
+
+The =terminal-features= option ensures proper communication between Tmux and the external terminal emulator for True Color support. The general pattern is:
+- =set-option -as terminal-features ',<pattern>:<capabilities>'= to add terminal features
+- =set-option -as terminal-overrides ',<pattern>:<capabilities>'= to perform overrides
+- The ='a'= flag preserves previous overrides
+
+The RGB feature setting is commented out as =screen-256color= is typically sufficient.
+
 #+begin_src conf
-
-###################################
-#                                 #
-#  Terminal colors compatibility  #
-#                                 #
-###################################
-# Note: commented lines to see current tmux behaviour
-
-# Set the default TERM env variable to tell applications running
-# inside Tmux that the terminal supports 256 colors.
-# Executing 'echo $TERM' will then return 'screen-256color'
-# where its default value is tmux-256color
 set -s default-terminal 'screen-256color'
-# Ensure proper communication between Tmux and the external
-# terminal emulator enabling True Color support.
-# The general pattern used to add terminal features is:
-# set-option -as terminal-features ',<pattern>:<capabilities>'
-# while to perform overrides is:
-# set-option -as terminal-overrides ',<pattern>:<capabilities>'
-# where the 'a' flag is required to preserve previous overrides.
 ### set -as terminal-features ',xterm-256color:RGB'
 #+end_src

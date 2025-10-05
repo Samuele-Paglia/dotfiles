@@ -18,11 +18,11 @@ WezTerm is a GPU-accelerated cross-platform terminal emulator written in Rust. I
 
 The WezTerm configuration itself is defined in =wezterm/README.org= and tangled to =wezterm.lua=.
 
-All code blocks in this document will be tangled to =mise.toml= using =C-c C-v t=.
+All code blocks in this document will be tangled to =wezterm.toml= using =C-c C-v t=.
 
 * Configuration
 :PROPERTIES:
-:header-args:toml: :tangle mise.toml
+:header-args:toml: :tangle wezterm.toml
 :END:
 
 Install WezTerm using Homebrew cask:

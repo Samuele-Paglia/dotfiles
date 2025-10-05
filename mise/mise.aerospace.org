@@ -23,11 +23,11 @@ The AeroSpace configuration itself is defined in =aerospace/README.org= and tang
 
 Documentation: https://nikitabobko.github.io/AeroSpace/
 
-All code blocks in this document will be tangled to =mise.toml= using =C-c C-v t=.
+All code blocks in this document will be tangled to =aerospace.toml= using =C-c C-v t=.
 
 * Configuration
 :PROPERTIES:
-:header-args:toml: :tangle mise.toml
+:header-args:toml: :tangle aerospace.toml
 :END:
 
 Install AeroSpace using Homebrew cask:

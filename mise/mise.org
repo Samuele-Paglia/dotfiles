@@ -1,0 +1,237 @@
+#+TITLE: Mise Configuration
+#+AUTHOR: Samuele Paglia
+#+DESCRIPTION: Global mise configuration for dotfiles management
+#+STARTUP: showeverything
+#+OPTIONS: toc:2
+#+PROPERTY: header-args:toml :tangle config.toml
+
+* Table of contents :toc:
+- [[#introduction][Introduction]]
+- [[#configuration-structure][Configuration Structure]]
+- [[#global-settings][Global Settings]]
+- [[#environment-variables][Environment Variables]]
+- [[#core-tools][Core Tools]]
+- [[#modern-shell-utilities][Modern Shell Utilities]]
+- [[#editors][Editors]]
+- [[#tool-specific-configurations][Tool-Specific Configurations]]
+- [[#global-tasks][Global Tasks]]
+
+* Introduction
+
+This is the main mise configuration file for the dotfiles repository. It uses a literate programming approach with Emacs Org Mode.
+
+Mise (https://mise.jdx.dev/) is a polyglot runtime manager that can manage:
+- Development tool versions (like asdf)
+- Environment variables
+- Task automation
+
+This configuration file tangles to =config.toml= which, when stowed to =~/.config/mise/config.toml=, becomes the global mise configuration.
+
+* Configuration Structure
+
+The mise configuration is split into modular files:
+
+- =mise.org= (this file) → =config.toml= - Main configuration with global tools and tasks
+- =mise.tmux.org= → =tmux.toml= - TMUX terminal multiplexer specific config
+- =mise.aerospace.org= → =aerospace.toml= - AeroSpace window manager specific config
+- =mise.wezterm.org= → =wezterm.toml= - WezTerm terminal emulator specific config
+
+Tool-specific configurations are included via the =[includes]= section.
+
+All code blocks in this file will be tangled to =config.toml=.
+
+* Global Settings
+
+Configure mise global settings:
+
+#+begin_src toml
+# Mise configuration for dotfiles repository
+# Documentation: https://mise.jdx.dev/configuration.html
+
+[settings]
+# Automatically install missing tools when entering directory
+auto_install = true
+
+# Use verbose output for better debugging
+verbose = false
+
+# Experimental features
+experimental = true
+#+end_src
+
+* Environment Variables
+
+Set up environment variables used across the system:
+
+#+begin_src toml
+
+[env]
+# Dotfiles directory
+DOTFILES = "{{config_root}}"
+
+# XDG Base Directory Specification
+XDG_CONFIG_HOME = "~/.config"
+XDG_DATA_HOME = "~/.local/share"
+XDG_CACHE_HOME = "~/.cache"
+#+end_src
+
+* Core Tools
+
+Core system tools that are fundamental for the dotfiles setup:
+
+#+begin_src toml
+
+[tools]
+# Core system tools
+"brew:stow" = "latest"           # Dotfiles symlink manager
+"brew:git" = "latest"            # Version control
+"brew:git-lfs" = "latest"        # Git Large File Storage
+
+# Mise itself (ensures latest version)
+"brew:mise" = "latest"
+#+end_src
+
+* Modern Shell Utilities
+
+Modern replacements for traditional Unix utilities:
+
+#+begin_src toml
+
+# Modern shell utilities
+"brew:eza" = "latest"                    # Modern replacement for 'ls'
+"brew:bat" = "latest"                    # Modern replacement for 'cat' with syntax highlighting
+"brew:fzf" = "latest"                    # Fuzzy finder
+"brew:zoxide" = "latest"                 # Smarter 'cd' command
+"brew:ripgrep" = "latest"                # Fast grep alternative
+"brew:fd" = "latest"                     # Fast find alternative
+"brew:zsh-autosuggestions" = "latest"    # Zsh autosuggestions
+"brew:zsh-syntax-highlighting" = "latest" # Zsh syntax highlighting
+"brew:atuin" = "latest"                  # Shell history management
+
+# Shell prompt
+"brew:starship" = "latest"               # Cross-shell prompt
+#+end_src
+
+* Editors
+
+Text editors for development:
+
+#+begin_src toml
+
+# Editors
+"brew:neovim" = "latest"         # Modern Vim-based editor
+"brew:emacs" = "latest"          # Extensible text editor
+#+end_src
+
+* Tool-Specific Configurations
+
+Include tool-specific mise configurations:
+
+#+begin_src toml
+
+# Include tool-specific configurations
+[include]
+tmux = "~/.config/mise/tmux.toml"
+aerospace = "~/.config/mise/aerospace.toml"
+wezterm = "~/.config/mise/wezterm.toml"
+#+end_src
+
+* Global Tasks
+
+Define global tasks for managing the dotfiles:
+
+#+begin_src toml
+
+[tasks.install]
+description = "Install all tools and set up dotfiles"
+run = [
+    "mise install",
+    "mkdir -p $HOME/.config",
+    "echo 'All tools installed. Run mise run setup to configure dotfiles.'",
+]
+
+[tasks.setup]
+description = "Set up dotfiles using stow"
+depends = ["install"]
+run = [
+    "stow --adopt -t ~/.config -v .",
+    "echo 'Dotfiles symlinked to ~/.config'",
+]
+
+[tasks.tangle]
+description = "Tangle all Org mode configuration files"
+run = '''
+emacs --batch --eval "(progn \
+  (require 'org) \
+  (dolist (file '(\"tmux/README.org\" \
+                  \"wezterm/README.org\" \
+                  \"aerospace/README.org\" \
+                  \"starship/README.org\" \
+                  \"git/README.org\" \
+                  \"nvim/README.org\" \
+                  \"emacs/config.org\" \
+                  \"mise/mise.org\" \
+                  \"mise/mise.tmux.org\" \
+                  \"mise/mise.aerospace.org\" \
+                  \"mise/mise.wezterm.org\")) \
+    (when (file-exists-p file) \
+      (message \"Tangling %s...\" file) \
+      (with-current-buffer (find-file-noselect file) \
+        (org-babel-tangle) \
+        (kill-buffer)))))"
+'''
+
+[tasks.update]
+description = "Update all tools to latest versions"
+run = [
+    "mise upgrade",
+    "brew upgrade",
+    "echo 'All tools updated.'",
+]
+
+[tasks.verify]
+description = "Verify stow configuration (dry run)"
+run = "stow --adopt -t ~/.config -nv ."
+
+[tasks.restow]
+description = "Re-stow all configurations"
+run = "stow -Rt ~/.config ."
+
+[tasks.clean]
+description = "Remove all symlinks created by stow"
+run = "stow -Dt ~/.config ."
+
+[tasks.doctor]
+description = "Check mise and tool installation status"
+run = [
+    "mise doctor",
+    "mise list",
+]
+#+end_src
+
+** Usage
+
+After tangling all org files and setting up with stow:
+
+#+begin_src shell
+# Tangle all configurations
+mise run tangle
+
+# Install all tools
+mise run install
+
+# Set up dotfiles with stow
+mise run setup
+
+# Update all tools
+mise run update
+
+# Verify stow configuration (dry run)
+mise run verify
+
+# Re-stow configurations
+mise run restow
+
+# Check mise status
+mise run doctor
+#+end_src

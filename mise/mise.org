@@ -138,7 +138,34 @@ wezterm = "~/.config/mise/wezterm.toml"
 
 * Global Tasks
 
-Define global tasks for managing the dotfiles:
+Define global tasks for managing the dotfiles.
+
+** GNU Stow Usage
+
+Stow is used to symlink configuration files from the dotfiles directory to =~/.config=.
+
+The =.stowrc= file in the repository root configures:
+- Target directory: =~/.config=
+- Ignore patterns: =.md=, =.org=, =.stowrc=, =DS_Store=, backup files (=.*~=)
+- Use =--adopt= flag to overwrite stow directory files with existing target files
+
+Common stow operations:
+
+- *Deploy all*: =stow .= (uses .stowrc settings)
+- *Dry run*: =stow --adopt -t ~/.config -nv .= (simulate, verbose)
+- *Deploy specific*: =stow -v -t ~/.config tmux nvim=
+- *Remove (unstow)*: =stow -Dt ~/.config bash=
+- *Re-stow*: =stow -Rt ~/.config .= (unlink and relink)
+
+Flags:
+- =-n= / =--simulate=: Dry run, show what would be done
+- =-v= / =--verbose=: Show operations (use =-vv= for more detail)
+- =-t DIR=: Target directory
+- =-D=: Delete (unstow)
+- =-R=: Restow (delete then stow)
+- =--adopt=: Adopt existing files from target into stow directory
+
+** Task Definitions
 
 #+begin_src toml
 
@@ -234,4 +261,7 @@ mise run restow
 
 # Check mise status
 mise run doctor
+
+# Clean up (remove all symlinks)
+mise run clean
 #+end_src

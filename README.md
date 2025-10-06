@@ -1,6 +1,6 @@
-# Dotfiles
+# My dotfiles repo
 
-Personal dotfiles using **literate programming** (Emacs Org Mode) with **automated setup** (mise + GNU Stow).
+My personal dotfiles using **literate programming** (Emacs Org Mode) with **automated setup** (mise + GNU Stow).
 
 ## Philosophy
 
@@ -30,12 +30,12 @@ mise run install && mise run setup && mise run setup-tmux
 
 Each tool has a directory with `README.org` (source) and generated config files:
 
-- **nvim** - Neovim (Lua, lazy.nvim)
+- **nvim** - Neovim
 - **tmux** - Terminal multiplexer
 - **wezterm** - Terminal emulator
 - **aerospace** - Window manager (macOS)
 - **starship** - Shell prompt
-- **emacs** - Text editor (elpaca)
+- **emacs** - Text editor
 - **git** - Version control config
 - **mise** - Tool automation
 

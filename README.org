@@ -314,13 +314,3 @@ mise run doctor
 # Clean up (remove all symlinks)
 mise run clean
 #+end_src
-
-** Tool-Specific Documentation
-
-Some tools have additional mise documentation in their directories:
-
-- =wezterm/mise.README.org= - WezTerm installation documentation and verification tasks
-- =aerospace/mise.README.org= - AeroSpace window manager setup and management tasks
-- =fonts/README.org= - Font installation documentation
-
-These documents can be tangled individually to create tool-specific =mise.toml= files if needed for modular management, but the main =mise.toml= in the root directory includes all necessary tools.

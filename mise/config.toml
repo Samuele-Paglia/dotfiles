@@ -1,122 +1,128 @@
-# Mise configuration for dotfiles repository
-# Documentation: https://mise.jdx.dev/configuration.html
-
 [settings]
-# Automatically install missing tools when entering directory
 auto_install = true
-
-# Use verbose output for better debugging
 verbose = false
-
-# Experimental features
 experimental = true
 
 [env]
-# Dotfiles directory
-DOTFILES = "{{config_root}}"
-
-# XDG Base Directory Specification
+DOTFILES_ROOT = "{{env.DOTFILES_ROOT | default(value=env.HOME ~ '/Documents/claude/dotfiles')}}"
+MISE_CONFIG_DIR = "{{config_root}}"
 XDG_CONFIG_HOME = "~/.config"
 XDG_DATA_HOME = "~/.local/share"
 XDG_CACHE_HOME = "~/.cache"
 
-[tools]
-# Core system tools
-"brew:stow" = "latest"           # Dotfiles symlink manager
-"brew:git" = "latest"            # Version control
-"brew:git-lfs" = "latest"        # Git Large File Storage
+[tasks.install-brew-tools]
+description = "Install CLI tools via Homebrew"
+run = '''
+brew install \
+  stow git git-lfs mise \
+  eza bat fzf zoxide ripgrep fd \
+  zsh-autosuggestions zsh-syntax-highlighting atuin \
+  starship neovim emacs && \
+echo '✓ Homebrew CLI tools installed'
+'''
 
-# Mise itself (ensures latest version)
-"brew:mise" = "latest"
+[tasks.install-brew-casks]
+description = "Install GUI applications via Homebrew casks"
+run = '''
+brew install --cask wezterm && \
+brew install nikitabobko/tap/aerospace && \
+echo '✓ Homebrew casks installed'
+'''
 
-# Modern shell utilities
-"brew:eza" = "latest"                    # Modern replacement for 'ls'
-"brew:bat" = "latest"                    # Modern replacement for 'cat' with syntax highlighting
-"brew:fzf" = "latest"                    # Fuzzy finder
-"brew:zoxide" = "latest"                 # Smarter 'cd' command
-"brew:ripgrep" = "latest"                # Fast grep alternative
-"brew:fd" = "latest"                     # Fast find alternative
-"brew:zsh-autosuggestions" = "latest"    # Zsh autosuggestions
-"brew:zsh-syntax-highlighting" = "latest" # Zsh syntax highlighting
-"brew:atuin" = "latest"                  # Shell history management
-
-# Shell prompt
-"brew:starship" = "latest"               # Cross-shell prompt
-
-# Editors
-"brew:neovim" = "latest"         # Modern Vim-based editor
-"brew:emacs" = "latest"          # Extensible text editor
-
-# Include tool-specific configurations
-[task_config]
-includes = [
-    "~/.config/mise/tmux.toml",
-    "~/.config/mise/aerospace.toml",
-    "~/.config/mise/wezterm.toml"
-]
+[tasks.bootstrap]
+description = "Complete setup: install tools, tangle configs, and stow dotfiles"
+depends = ["install-brew-tools", "install-brew-casks", "tangle", "setup", "setup-tmux"]
+run = "echo '✓ Bootstrap complete! Dotfiles are ready.'"
 
 [tasks.install]
-description = "Install all tools and set up dotfiles"
+description = "Install all tools (Homebrew CLI tools and casks)"
+depends = ["install-brew-tools", "install-brew-casks"]
 run = [
-    "mise install",
     "mkdir -p $HOME/.config",
-    "echo 'All tools installed. Run mise run setup to configure dotfiles.'",
-]
-
-[tasks.setup]
-description = "Set up dotfiles using stow"
-depends = ["install"]
-run = [
-    "stow --adopt -t ~/.config -v .",
-    "echo 'Dotfiles symlinked to ~/.config'",
+    "echo '✓ All tools installed'",
 ]
 
 [tasks.tangle]
 description = "Tangle all Org mode configuration files"
+dir = "{{env.DOTFILES_ROOT}}"
 run = '''
 emacs --batch --eval "(progn \
   (require 'org) \
-  (dolist (file '(\"tmux/README.org\" \
-                  \"wezterm/README.org\" \
-                  \"aerospace/README.org\" \
-                  \"starship/README.org\" \
-                  \"git/README.org\" \
-                  \"nvim/README.org\" \
-                  \"emacs/config.org\" \
-                  \"mise/mise.org\" \
-                  \"mise/mise.tmux.org\" \
-                  \"mise/mise.aerospace.org\" \
-                  \"mise/mise.wezterm.org\")) \
+  (dolist (file '(\"{{env.DOTFILES_ROOT}}/tmux/README.org\" \
+                  \"{{env.DOTFILES_ROOT}}/wezterm/README.org\" \
+                  \"{{env.DOTFILES_ROOT}}/aerospace/README.org\" \
+                  \"{{env.DOTFILES_ROOT}}/starship/README.org\" \
+                  \"{{env.DOTFILES_ROOT}}/git/README.org\" \
+                  \"{{env.DOTFILES_ROOT}}/nvim/README.org\" \
+                  \"{{env.DOTFILES_ROOT}}/emacs/config.org\" \
+                  \"{{env.DOTFILES_ROOT}}/mise/mise.org\")) \
     (when (file-exists-p file) \
       (message \"Tangling %s...\" file) \
       (with-current-buffer (find-file-noselect file) \
         (org-babel-tangle) \
         (kill-buffer)))))"
 '''
+outputs = ["echo '✓ All configurations tangled'"]
+
+[tasks.setup]
+description = "Set up dotfiles using stow (creates symlinks in ~/.config)"
+depends = ["tangle"]
+dir = "{{env.DOTFILES_ROOT}}"
+run = [
+    "stow --adopt -t ~/.config -v .",
+    "echo '✓ Dotfiles symlinked to ~/.config'",
+]
 
 [tasks.update]
 description = "Update all tools to latest versions"
 run = [
     "mise upgrade",
     "brew upgrade",
-    "echo 'All tools updated.'",
+    "echo '✓ All tools updated'",
 ]
 
 [tasks.verify]
 description = "Verify stow configuration (dry run)"
+dir = "{{env.DOTFILES_ROOT}}"
 run = "stow --adopt -t ~/.config -nv ."
 
 [tasks.restow]
 description = "Re-stow all configurations"
-run = "stow -Rt ~/.config ."
+dir = "{{env.DOTFILES_ROOT}}"
+run = [
+    "stow -Rt ~/.config .",
+    "echo '✓ Configurations re-stowed'",
+]
 
 [tasks.clean]
 description = "Remove all symlinks created by stow"
-run = "stow -Dt ~/.config ."
+dir = "{{env.DOTFILES_ROOT}}"
+run = [
+    "stow -Dt ~/.config .",
+    "echo '✓ Symlinks removed'",
+]
 
 [tasks.doctor]
 description = "Check mise and tool installation status"
 run = [
     "mise doctor",
     "mise list",
+]
+
+[tasks.setup-tmux]
+description = "Install TMUX Plugin Manager (TPM)"
+run = [
+    "git clone https://github.com/tmux-plugins/tpm ~/.config/tmux/plugins/tpm || echo 'TPM already installed'",
+    "echo '✓ TPM installed. Press prefix + I in tmux to install plugins'",
+]
+
+[tasks.reload-tmux]
+description = "Reload TMUX configuration"
+run = "tmux source-file ~/.config/tmux/tmux.conf || echo 'Start tmux first, then reload with prefix + R'"
+
+[tasks.reload-aerospace]
+description = "Reload AeroSpace configuration"
+run = [
+    "aerospace reload-config",
+    "echo '✓ AeroSpace configuration reloaded'",
 ]

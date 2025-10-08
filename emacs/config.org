@@ -5,6 +5,7 @@
 #+OPTIONS: toc:2
 
 * Table of contents :toc:
+- [[#early-initialization][Early Initialization]]
 - [[#programs-to-load-first][Programs to load first]]
   - [[#package-manager][Package Manager]]
   - [[#evil-mode][Evil Mode]]
@@ -29,6 +30,21 @@
   - [[#app-launcher][App launcher]]
 - [[#keybindings-discovery][Keybindings discovery]]
   - [[#which-key-tool][Which-key tool]]
+
+* Early Initialization
+:PROPERTIES:
+:header-args:emacs-lisp: :tangle early-init.el
+:END:
+
+This file is executed before =init.el=. It's used to configure settings that need to be set as early as possible in the Emacs startup process.
+
+** Disable Default Package Manager
+
+Disable the default Emacs package manager (package.el) to prevent conflicts with elpaca, which is configured later in =config.org=.
+
+#+begin_src emacs-lisp
+(setq package-enable-at-startup nil)
+#+end_src
 
 * Programs to load first
 

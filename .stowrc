@@ -1,7 +1,6 @@
 --target=~/.config
---ignore=\.*\.md
---ignore=\.*\.org
---ignore=.stowrc
+--ignore=\.md$
+--ignore=\.org$
+--ignore=^\.stowrc$
 --ignore=DS_Store
---ignore=\.*\.~
---adopt
+--ignore=~$

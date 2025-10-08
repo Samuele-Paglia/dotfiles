@@ -162,7 +162,6 @@ Updates all installed tools to their latest versions.
 [tasks.update]
 description = "Update all tools to latest versions"
 run = [
-    "mise upgrade",
     "brew upgrade",
     "echo '✓ All tools updated'",
 ]
@@ -208,7 +207,7 @@ description = "Set up dotfiles using stow (creates symlinks in ~/.config)"
 depends = ["tangle"]
 dir = "{{env.DOTFILES_ROOT}}"
 run = [
-    "stow",
+    "stow .",
     "echo '✓ Dotfiles symlinked to ~/.config'",
 ]
 #+end_src

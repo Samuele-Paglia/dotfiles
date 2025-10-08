@@ -1,37 +1,16 @@
 [settings]
-auto_install = true
 verbose = false
 experimental = true
 
 [env]
 DOTFILES_ROOT = "{{env.DOTFILES_ROOT | default(value=env.HOME ~ '/Documents/claude/dotfiles')}}"
 MISE_CONFIG_DIR = "{{config_root}}"
-XDG_CONFIG_HOME = "~/.config"
-XDG_DATA_HOME = "~/.local/share"
-XDG_CACHE_HOME = "~/.cache"
-
-[tasks.install-brew-tools]
-description = "Install CLI tools via Homebrew"
-run = '''
-brew install \
-  stow git git-lfs mise \
-  eza bat fzf zoxide ripgrep fd \
-  zsh-autosuggestions zsh-syntax-highlighting atuin \
-  starship neovim emacs && \
-echo '✓ Homebrew CLI tools installed'
-'''
-
-[tasks.install-brew-casks]
-description = "Install GUI applications via Homebrew casks"
-run = '''
-brew install --cask wezterm && \
-brew install nikitabobko/tap/aerospace && \
-echo '✓ Homebrew casks installed'
-'''
+BREW_CLI_TOOLS = "stow git git-lfs eza bat fzf zoxide ripgrep fd zsh-autosuggestions zsh-syntax-highlighting atuin starship neovim emacs"
+BREW_CASKS = "wezterm nikitabobko/tap/aerospace"
 
 [tasks.bootstrap]
 description = "Complete setup: install tools, tangle configs, and stow dotfiles"
-depends = ["install-brew-tools", "install-brew-casks", "tangle", "setup", "setup-tmux"]
+depends = ["install", "tangle", "stow", "setup-tmux"]
 run = "echo '✓ Bootstrap complete! Dotfiles are ready.'"
 
 [tasks.install]
@@ -40,6 +19,28 @@ depends = ["install-brew-tools", "install-brew-casks"]
 run = [
     "mkdir -p $HOME/.config",
     "echo '✓ All tools installed'",
+]
+
+[tasks.install-brew-tools]
+description = "Install CLI tools via Homebrew"
+run = '''
+brew install {{env.BREW_CLI_TOOLS}} && \
+echo '✓ Homebrew CLI tools installed'
+'''
+
+[tasks.install-brew-casks]
+description = "Install GUI applications via Homebrew casks"
+run = '''
+brew install --cask {{env.BREW_CASKS}} && \
+echo '✓ Homebrew casks installed'
+'''
+
+[tasks.update]
+description = "Update all tools to latest versions"
+run = [
+    "mise upgrade",
+    "brew upgrade",
+    "echo '✓ All tools updated'",
 ]
 
 [tasks.tangle]
@@ -55,7 +56,7 @@ emacs --batch --eval "(progn \
                   \"{{env.DOTFILES_ROOT}}/git/README.org\" \
                   \"{{env.DOTFILES_ROOT}}/nvim/README.org\" \
                   \"{{env.DOTFILES_ROOT}}/emacs/config.org\" \
-                  \"{{env.DOTFILES_ROOT}}/mise/mise.org\")) \
+                  \"{{env.DOTFILES_ROOT}}/mise/README.org\")) \
     (when (file-exists-p file) \
       (message \"Tangling %s...\" file) \
       (with-current-buffer (find-file-noselect file) \
@@ -64,41 +65,33 @@ emacs --batch --eval "(progn \
 '''
 outputs = ["echo '✓ All configurations tangled'"]
 
-[tasks.setup]
+[tasks.stow]
 description = "Set up dotfiles using stow (creates symlinks in ~/.config)"
 depends = ["tangle"]
 dir = "{{env.DOTFILES_ROOT}}"
 run = [
-    "stow --adopt -t ~/.config -v .",
+    "stow",
     "echo '✓ Dotfiles symlinked to ~/.config'",
 ]
 
-[tasks.update]
-description = "Update all tools to latest versions"
-run = [
-    "mise upgrade",
-    "brew upgrade",
-    "echo '✓ All tools updated'",
-]
-
-[tasks.verify]
+[tasks.stow-verify]
 description = "Verify stow configuration (dry run)"
 dir = "{{env.DOTFILES_ROOT}}"
-run = "stow --adopt -t ~/.config -nv ."
+run = "stow -nv ." # "stow --adopt -t ~/.config -nv ."
 
 [tasks.restow]
 description = "Re-stow all configurations"
 dir = "{{env.DOTFILES_ROOT}}"
 run = [
-    "stow -Rt ~/.config .",
+    "stow -R .", # "stow -Rt ~/.config .",
     "echo '✓ Configurations re-stowed'",
 ]
 
-[tasks.clean]
+[tasks.destow]
 description = "Remove all symlinks created by stow"
 dir = "{{env.DOTFILES_ROOT}}"
 run = [
-    "stow -Dt ~/.config .",
+    "stow -D .", # "stow -Dt ~/.config .",
     "echo '✓ Symlinks removed'",
 ]
 

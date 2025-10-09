@@ -1,0 +1,268 @@
+#+TITLE: Zsh Configuration
+#+AUTHOR: Samuele Paglia
+#+DESCRIPTION: My Zsh shell configuration using literate programming
+#+STARTUP: showeverything
+#+OPTIONS: toc:2
+
+* Table of contents :toc:
+- [[#introduction][Introduction]]
+- [[#installation][Installation]]
+- [[#zsh-configuration-files-overview][Zsh Configuration Files Overview]]
+- [[#environment-variables-zshenv][Environment Variables (zshenv)]]
+- [[#login-shell-configuration-zprofile][Login Shell Configuration (zprofile)]]
+- [[#interactive-shell-configuration-zshrc][Interactive Shell Configuration (zshrc)]]
+  - [[#completion-system][Completion System]]
+  - [[#history-configuration][History Configuration]]
+  - [[#plugin-loading][Plugin Loading]]
+  - [[#tool-initialization][Tool Initialization]]
+- [[#aliases][Aliases]]
+  - [[#basic-command-replacements][Basic Command Replacements]]
+  - [[#application-wrappers][Application Wrappers]]
+  - [[#eza-enhanced-ls][Eza Enhanced ls]]
+
+* Introduction
+
+My Zsh configuration is written using Emacs Org Mode following a literate programming approach. This allows me to document every configuration choice while maintaining the actual configuration files through tangling.
+
+Zsh (Z Shell) is a powerful shell that incorporates features from bash, ksh, and tcsh. It provides excellent completion, history management, and customization options.
+
+All the configuration code blocks in this document will be tangled (exported) to their respective configuration files using Org Mode's tangling feature (=C-c C-v t=).
+
+* Installation
+
+Zsh is typically pre-installed on macOS. To ensure you have the latest version:
+
+#+begin_src shell
+brew install zsh
+#+end_src
+
+Set Zsh as your default shell:
+
+#+begin_src shell
+chsh -s $(which zsh)
+#+end_src
+
+After changing your default shell, restart your terminal for the changes to take effect.
+
+* Zsh Configuration Files Overview
+
+Zsh uses multiple configuration files that are sourced at different times. Understanding when each file is loaded is crucial for proper configuration:
+
+| File         | When Loaded                          | Purpose                                      |
+|--------------+--------------------------------------+----------------------------------------------|
+| =.zshenv=    | Always (every zsh instance)          | Environment variables, minimal setup         |
+| =.zprofile=  | Login shells only, before =.zshrc=   | Login-specific setup, GUI environment        |
+| =.zshrc=     | Interactive shells                   | Aliases, functions, prompt, keybindings      |
+| =.zlogin=    | Login shells only, after =.zshrc=    | Final login setup (rarely used)              |
+
+Loading order for a login shell: =.zshenv= → =.zprofile= → =.zshrc= → =.zlogin=
+
+Loading order for an interactive (non-login) shell: =.zshenv= → =.zshrc=
+
+For most terminal emulator usage on macOS, =.zshrc= is the most important file as terminal windows typically start interactive (non-login) shells.
+
+* Environment Variables (zshenv)
+:PROPERTIES:
+:header-args:shell: :tangle zshenv
+:END:
+
+The =.zshenv= file is sourced for all zsh instances (interactive, non-interactive, login, non-login). This makes it the ideal place for environment variables that should be available everywhere.
+
+Keep this file minimal and fast, as it's sourced frequently. Avoid heavy computations or tool initializations here.
+
+Set the default text editor to Neovim. This environment variable is used by many command-line tools (git, crontab, etc.) to determine which editor to launch:
+
+#+begin_src shell
+export EDITOR=nvim
+#+end_src
+
+* Login Shell Configuration (zprofile)
+:PROPERTIES:
+:header-args:shell: :tangle zprofile
+:END:
+
+The =.zprofile= file is sourced only for login shells, before =.zshrc=. Login shells are started when:
+- You log in via SSH
+- You use =su - username= (with the dash)
+- You start a login shell explicitly with =zsh -l=
+
+On macOS, GUI applications don't inherit the shell environment by default. If you need to set up environment variables for GUI applications, =.zprofile= is the place to do it.
+
+For the current setup with mise handling tool management and PATH configuration, and primarily using interactive terminal sessions, this file is not needed. However, it's included for completeness and future extensibility.
+
+Examples of what you might put here in the future:
+- PATH modifications for GUI applications
+- macOS-specific environment setup for applications launched via Dock/Spotlight
+- One-time initialization for login sessions
+- Loading secrets or credentials that shouldn't be in =.zshenv=
+
+#+begin_src shell
+#+end_src
+
+* Interactive Shell Configuration (zshrc)
+:PROPERTIES:
+:header-args:shell: :tangle zshrc
+:END:
+
+The =.zshrc= file is the heart of the Zsh configuration for interactive shells. This is where we configure the completion system, history behavior, load plugins, initialize tools, and source our aliases.
+
+** Completion System
+
+The Zsh completion system provides intelligent tab completion for commands, options, file paths, and more. It's one of Zsh's most powerful features.
+
+Initialize the completion system. The =-U= flag prevents alias expansion during function loading, and =-z= tells it to use Zsh style:
+
+#+begin_src shell
+autoload -Uz compinit
+compinit
+#+end_src
+
+Note: The completion system should be initialized before loading tools like fzf, as some tools integrate with it.
+
+** History Configuration
+
+Zsh's history system allows you to recall and reuse previous commands. These settings configure how history is stored and managed.
+
+Set the maximum number of history entries kept in memory during the current session to 10,000 commands:
+
+#+begin_src shell
+export HISTSIZE=10000
+#+end_src
+
+Set the maximum number of history entries saved to the history file (persistent across sessions) to 10,000 commands:
+
+#+begin_src shell
+export SAVEHIST=10000
+#+end_src
+
+Specify the file where command history is stored:
+
+#+begin_src shell
+export HISTFILE=~/.zsh_history
+#+end_src
+
+Configure history behavior with setopts:
+
+Immediately append commands to the history file as they're executed, rather than waiting until the shell exits. This ensures history is shared across multiple concurrent shell sessions:
+
+#+begin_src shell
+setopt INC_APPEND_HISTORY
+#+end_src
+
+Prevent duplicate consecutive commands from being saved to history. If you run the same command twice in a row, only one instance is saved:
+
+#+begin_src shell
+setopt HIST_IGNORE_DUPS
+#+end_src
+
+Save timestamps alongside commands in the history file. This allows you to see when each command was executed:
+
+#+begin_src shell
+setopt EXTENDED_HISTORY
+#+end_src
+
+** Plugin Loading
+
+Source our custom aliases file. This keeps aliases organized in a separate file for better maintainability:
+
+#+begin_src shell
+source ~/.config/zsh/aliases
+#+end_src
+
+Load the zsh-autosuggestions plugin. This plugin suggests commands as you type based on your command history, displayed in gray text. Press the right arrow key to accept a suggestion:
+
+#+begin_src shell
+source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+#+end_src
+
+Load the zsh-syntax-highlighting plugin. This plugin provides real-time syntax highlighting in the command line, showing valid commands in green and invalid ones in red:
+
+#+begin_src shell
+source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+#+end_src
+
+** Tool Initialization
+
+Initialize fzf (fuzzy finder) with Zsh integration. This sets up key bindings and completion for fuzzy finding files, command history, and more:
+
+#+begin_src shell
+source <(fzf --zsh)
+#+end_src
+
+Initialize Starship prompt. Starship is a minimal, fast, and customizable prompt that provides git status, language versions, and other context-aware information:
+
+#+begin_src shell
+eval "$(starship init zsh)"
+#+end_src
+
+Initialize zoxide with Zsh integration. Zoxide is a smarter cd command that tracks your most used directories. The =--cmd cd= flag replaces the standard =cd= command with zoxide's smart directory jumping:
+
+#+begin_src shell
+eval "$(zoxide init zsh --cmd cd)"
+#+end_src
+
+* Aliases
+:PROPERTIES:
+:header-args:shell: :tangle aliases
+:END:
+
+Aliases provide shortcuts for frequently used commands and customize command behavior. This file is sourced from =.zshrc=.
+
+** Basic Command Replacements
+
+Replace =cat= with =bat=, a modern alternative that provides syntax highlighting, line numbers, and git integration:
+
+#+begin_src shell
+alias cat='bat'
+#+end_src
+
+** Application Wrappers
+
+Launch Emacs in terminal mode (=-nw= for "no window") with the custom configuration directory at =~/.config/emacs=:
+
+#+begin_src shell
+alias emacs='emacs -nw --init-directory=$HOME/.config/emacs'
+#+end_src
+
+Shortcut for lazygit, a terminal UI for git commands:
+
+#+begin_src shell
+alias lg='lazygit'
+#+end_src
+
+Shortcut for =git st= (git status short form, defined in git configuration):
+
+#+begin_src shell
+alias gst='git st'
+#+end_src
+
+** Eza Enhanced ls
+
+Eza is a modern replacement for =ls= with better defaults, colors, icons, and tree views. These aliases provide a comprehensive set of listing options.
+
+Check if eza is installed before setting up aliases. This prevents errors if eza is not available:
+
+#+begin_src shell
+if type eza &>/dev/null; then
+  alias l="eza --icons=always"
+  alias ls="eza --icons=always"
+  alias ll="eza -lg --icons=always"
+  alias la="eza -lag --icons=always"
+  alias lt="eza -lTg --icons=always"
+  alias lt2="eza -lTg --level=2 --icons=always"
+  alias lt3="eza -lTg --level=3 --icons=always"
+  alias lta="eza -lTag --icons=always"
+  alias lta2="eza -lTag --level=2 --icons=always"
+  alias lta3="eza -lTag --level=3 --icons=always"
+else
+  echo ERROR: eza could not be found. Skip setting up eza aliases.
+fi
+#+end_src
+
+Eza alias explanation:
+- =l= / =ls=: Basic listing with icons
+- =ll=: Long format with git status (=-l= long, =-g= git)
+- =la=: Long format with all files including hidden (=-a= all)
+- =lt=: Tree view in long format (=-T= tree)
+- =lt2= / =lt3=: Tree view with depth limit (=--level=N=)
+- =lta= / =lta2= / =lta3=: Tree view with all files including hidden

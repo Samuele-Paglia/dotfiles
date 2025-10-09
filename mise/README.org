@@ -185,6 +185,7 @@ emacs --batch --eval "(progn \
                   \"{{env.DOTFILES_ROOT}}/git/README.org\" \
                   \"{{env.DOTFILES_ROOT}}/nvim/README.org\" \
                   \"{{env.DOTFILES_ROOT}}/emacs/config.org\" \
+                  \"{{env.DOTFILES_ROOT}}/zsh/README.org\" \
                   \"{{env.DOTFILES_ROOT}}/mise/README.org\")) \
     (when (file-exists-p file) \
       (message \"Tangling %s...\" file) \

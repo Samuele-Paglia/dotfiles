@@ -88,8 +88,8 @@ Configure the font family and size used in the terminal:
 JetBrains Mono is a monospaced font designed for developers, with excellent ligature support and readability.
 
 #+begin_src lua
--- Font
-config.font = wezterm.font("JetBrains Mono")
+-- Font (Nerd Font for icon support)
+config.font = wezterm.font("JetBrainsMono Nerd Font")
 config.font_size = 12
 --config.line_height = 1.2 -- Not applied for a bug, introduces unexpected bottom padding
 #+end_src

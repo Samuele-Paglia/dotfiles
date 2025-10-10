@@ -82,7 +82,7 @@ DOTFILES_ROOT = "{{env.DOTFILES_ROOT | default(value=env.HOME ~ '/Documents/clau
 MISE_CONFIG_DIR = "{{config_root}}"
 XDG_CONFIG_HOME = "{{env.XDG_CONFIG_HOME | default(value=env.HOME ~ '/.config')}}"
 BREW_CLI_TOOLS = "stow git git-lfs eza bat fzf zoxide ripgrep fd zsh-autosuggestions zsh-syntax-highlighting atuin starship neovim emacs macchina"
-BREW_CASKS = "wezterm nikitabobko/tap/aerospace"
+BREW_CASKS = "wezterm nikitabobko/tap/aerospace font-jetbrains-mono-nerd-font"
 #+end_src
 
 *** Tool Lists Explanation

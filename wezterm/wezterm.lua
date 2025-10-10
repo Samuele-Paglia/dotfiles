@@ -15,8 +15,8 @@ config.window_padding = {
 	bottom = 0,
 }
 
--- Font
-config.font = wezterm.font("JetBrains Mono")
+-- Font (Nerd Font for icon support)
+config.font = wezterm.font("JetBrainsMono Nerd Font")
 config.font_size = 12
 --config.line_height = 1.2 -- Not applied for a bug, introduces unexpected bottom padding
 

@@ -80,8 +80,8 @@ Environment variables used throughout the mise tasks. These variables provide:
 [env]
 DOTFILES_ROOT = "{{env.DOTFILES_ROOT | default(value=env.HOME ~ '/Documents/claude/dotfiles')}}"
 MISE_CONFIG_DIR = "{{config_root}}"
-BREW_CLI_TOOLS = "stow git git-lfs eza bat fzf zoxide ripgrep fd zsh-autosuggestions zsh-syntax-highlighting atuin starship neovim emacs"
 XDG_CONFIG_HOME = "{{env.XDG_CONFIG_HOME | default(value=env.HOME ~ '/.config')}}"
+BREW_CLI_TOOLS = "stow git git-lfs eza bat fzf zoxide ripgrep fd zsh-autosuggestions zsh-syntax-highlighting atuin starship neovim emacs macchina"
 BREW_CASKS = "wezterm nikitabobko/tap/aerospace"
 #+end_src
 
@@ -98,6 +98,7 @@ BREW_CASKS = "wezterm nikitabobko/tap/aerospace"
 - =atuin=: Shell history management
 - =starship=: Cross-shell prompt
 - =neovim=, =emacs=: Text editors
+- =macchina=: Fast system information display
 
 **** GUI Applications (=BREW_CASKS=)
 - =wezterm=: GPU-accelerated terminal emulator
@@ -311,13 +312,18 @@ Sets up the =ZDOTDIR= environment variable in =~/.zshenv= to point Zsh to the co
 
 This task is necessary because Zsh has a specific loading order: it always sources =~/.zshenv= from =$HOME= first, before knowing about any custom configuration directory. By setting =ZDOTDIR= in this initial =~/.zshenv= file, we tell Zsh where to find the rest of the configuration files (=zshrc=, =zprofile=, =aliases=, etc.).
 
+Additionally, this task creates a =~/.hushlogin= file to suppress the "Last login" message that appears when opening a new terminal.
+
+*Note*: Modern terminal emulators like WezTerm, Ghostty, and Kitty typically don't show the "Last login" message by default, so the =~/.hushlogin= file may not be necessary. However, it's included for compatibility with Terminal.app and other environments that do display login messages.
+
 This approach keeps the actual Zsh configuration organized in =XDG_CONFIG_HOME/zsh/= (managed by stow and literate programming), while only requiring a minimal =~/.zshenv= in =$HOME= that points to the configuration directory.
 
 #+begin_src toml
 [tasks.setup-zsh]
-description = "Set ZDOTDIR in ~/.zshenv"
+description = "Set ZDOTDIR in ~/.zshenv and create .hushlogin to suppress login messages"
 run = '''
 echo 'export ZDOTDIR="{{env.XDG_CONFIG_HOME}}/zsh"' > ~/.zshenv && \
+touch ~/.hushlogin && \
 echo '✓ ZDOTDIR set in ~/.zshenv and .hushlogin created'
 '''
 #+end_src

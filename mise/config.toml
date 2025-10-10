@@ -5,8 +5,8 @@ experimental = true
 [env]
 DOTFILES_ROOT = "{{env.DOTFILES_ROOT | default(value=env.HOME ~ '/Documents/claude/dotfiles')}}"
 MISE_CONFIG_DIR = "{{config_root}}"
-BREW_CLI_TOOLS = "stow git git-lfs eza bat fzf zoxide ripgrep fd zsh-autosuggestions zsh-syntax-highlighting atuin starship neovim emacs"
 XDG_CONFIG_HOME = "{{env.XDG_CONFIG_HOME | default(value=env.HOME ~ '/.config')}}"
+BREW_CLI_TOOLS = "stow git git-lfs eza bat fzf zoxide ripgrep fd zsh-autosuggestions zsh-syntax-highlighting atuin starship neovim emacs macchina"
 BREW_CASKS = "wezterm nikitabobko/tap/aerospace"
 
 [tasks.bootstrap]
@@ -122,8 +122,9 @@ run = [
 ]
 
 [tasks.setup-zsh]
-description = "Set ZDOTDIR in ~/.zshenv"
+description = "Set ZDOTDIR in ~/.zshenv and create .hushlogin to suppress login messages"
 run = '''
 echo 'export ZDOTDIR="{{env.XDG_CONFIG_HOME}}/zsh"' > ~/.zshenv && \
+touch ~/.hushlogin && \
 echo '✓ ZDOTDIR set in ~/.zshenv and .hushlogin created'
 '''

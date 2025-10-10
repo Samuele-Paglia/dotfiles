@@ -6,18 +6,19 @@ experimental = true
 DOTFILES_ROOT = "{{env.DOTFILES_ROOT | default(value=env.HOME ~ '/Documents/claude/dotfiles')}}"
 MISE_CONFIG_DIR = "{{config_root}}"
 BREW_CLI_TOOLS = "stow git git-lfs eza bat fzf zoxide ripgrep fd zsh-autosuggestions zsh-syntax-highlighting atuin starship neovim emacs"
+XDG_CONFIG_HOME = "{{env.XDG_CONFIG_HOME | default(value=env.HOME ~ '/.config')}}"
 BREW_CASKS = "wezterm nikitabobko/tap/aerospace"
 
 [tasks.bootstrap]
 description = "Complete setup: install tools, tangle configs, and stow dotfiles"
-depends = ["install", "tangle", "stow", "setup-tmux"]
+depends = ["install", "tangle", "stow", "setup-tmux", "setup-zsh"]
 run = "echo '✓ Bootstrap complete! Dotfiles are ready.'"
 
 [tasks.install]
 description = "Install all tools (Homebrew CLI tools and casks)"
 depends = ["install-brew-tools", "install-brew-casks"]
 run = [
-    "mkdir -p $HOME/.config",
+    "mkdir -p {{env.XDG_CONFIG_HOME}}",
     "echo '✓ All tools installed'",
 ]
 
@@ -66,12 +67,12 @@ emacs --batch --eval "(progn \
 outputs = ["echo '✓ All configurations tangled'"]
 
 [tasks.stow]
-description = "Set up dotfiles using stow (creates symlinks in ~/.config)"
+description = "Set up dotfiles using stow (creates symlinks in XDG config directory)"
 depends = ["tangle"]
 dir = "{{env.DOTFILES_ROOT}}"
 run = [
     "stow .",
-    "echo '✓ Dotfiles symlinked to ~/.config'",
+    "echo '✓ Dotfiles symlinked to {{env.XDG_CONFIG_HOME}}'",
 ]
 
 [tasks.stow-verify]
@@ -105,13 +106,13 @@ run = [
 [tasks.setup-tmux]
 description = "Install TMUX Plugin Manager (TPM)"
 run = [
-    "git clone https://github.com/tmux-plugins/tpm ~/.config/tmux/plugins/tpm || echo 'TPM already installed'",
+    "git clone https://github.com/tmux-plugins/tpm {{env.XDG_CONFIG_HOME}}/tmux/plugins/tpm || echo 'TPM already installed'",
     "echo '✓ TPM installed. Press prefix + I in tmux to install plugins'",
 ]
 
 [tasks.reload-tmux]
 description = "Reload TMUX configuration"
-run = "tmux source-file ~/.config/tmux/tmux.conf || echo 'Start tmux first, then reload with prefix + R'"
+run = "tmux source-file {{env.XDG_CONFIG_HOME}}/tmux/tmux.conf || echo 'Start tmux first, then reload with prefix + R'"
 
 [tasks.reload-aerospace]
 description = "Reload AeroSpace configuration"
@@ -119,3 +120,10 @@ run = [
     "aerospace reload-config",
     "echo '✓ AeroSpace configuration reloaded'",
 ]
+
+[tasks.setup-zsh]
+description = "Set ZDOTDIR in ~/.zshenv"
+run = '''
+echo 'export ZDOTDIR="{{env.XDG_CONFIG_HOME}}/zsh"' > ~/.zshenv && \
+echo '✓ ZDOTDIR set in ~/.zshenv and .hushlogin created'
+'''

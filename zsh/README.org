@@ -55,6 +55,8 @@ Zsh uses multiple configuration files that are sourced at different times. Under
 | =.zshrc=     | Interactive shells                   | Aliases, functions, prompt, keybindings      |
 | =.zlogin=    | Login shells only, after =.zshrc=    | Final login setup (rarely used)              |
 
+*Note on file naming:* The files listed above use the standard naming convention with a leading dot (=.zshenv=, =.zshrc=, etc.). **The dot prefix is always required by Zsh, regardless of location.** Even when using =ZDOTDIR= to point to a custom directory like =~/.config/zsh/=, Zsh still expects files to be named =.zshenv=, =.zprofile=, =.zshrc=, etc. This is documented behavior in the Zsh manual, which states that startup files are read from =$ZDOTDIR/.zshenv=, =$ZDOTDIR/.zprofile=, =$ZDOTDIR/.zshrc=, =$ZDOTDIR/.zlogin=, and =$ZDOTDIR/.zlogout=. Our tangled files therefore use the dot prefix to comply with Zsh's file lookup expectations.
+
 Loading order for a login shell: =.zshenv= → =.zprofile= → =.zshrc= → =.zlogin=
 
 Loading order for an interactive (non-login) shell: =.zshenv= → =.zshrc=
@@ -63,7 +65,7 @@ For most terminal emulator usage on macOS, =.zshrc= is the most important file a
 
 * Environment Variables (zshenv)
 :PROPERTIES:
-:header-args:shell: :tangle zshenv
+:header-args:shell: :tangle .zshenv
 :END:
 
 The =.zshenv= file is sourced for all zsh instances (interactive, non-interactive, login, non-login). This makes it the ideal place for environment variables that should be available everywhere.
@@ -78,7 +80,7 @@ export EDITOR=nvim
 
 * Login Shell Configuration (zprofile)
 :PROPERTIES:
-:header-args:shell: :tangle zprofile
+:header-args:shell: :tangle .zprofile
 :END:
 
 The =.zprofile= file is sourced only for login shells, before =.zshrc=. Login shells are started when:
@@ -96,12 +98,15 @@ Examples of what you might put here in the future:
 - One-time initialization for login sessions
 - Loading secrets or credentials that shouldn't be in =.zshenv=
 
+Display system information using macchina when opening a new terminal. Macchina provides a fast, minimal system information display showing OS, kernel, uptime, packages, and more:
+
 #+begin_src shell
+macchina
 #+end_src
 
 * Interactive Shell Configuration (zshrc)
 :PROPERTIES:
-:header-args:shell: :tangle zshrc
+:header-args:shell: :tangle .zshrc
 :END:
 
 The =.zshrc= file is the heart of the Zsh configuration for interactive shells. This is where we configure the completion system, history behavior, load plugins, initialize tools, and source our aliases.

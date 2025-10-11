@@ -2,11 +2,14 @@
 verbose = false
 experimental = true
 
+[tools]
+shellcheck = "latest"            # Shell script linter (mise-managed)
+
 [env]
-DOTFILES_ROOT = "{{env.DOTFILES_ROOT | default(value=env.HOME ~ '/Documents/claude/dotfiles')}}"
+DOTFILES_ROOT = "{{env.DOTFILES_ROOT | default(value=env.HOME ~ '/Documents/repos/dotfiles')}}"
 MISE_CONFIG_DIR = "{{config_root}}"
 XDG_CONFIG_HOME = "{{env.XDG_CONFIG_HOME | default(value=env.HOME ~ '/.config')}}"
-BREW_CLI_TOOLS = "stow git git-lfs eza bat fzf zoxide ripgrep fd zsh-autosuggestions zsh-syntax-highlighting atuin starship neovim emacs macchina"
+BREW_CLI_TOOLS = "stow git git-lfs eza bat fzf zoxide ripgrep fd zsh-autosuggestions zsh-syntax-highlighting atuin starship neovim emacs macchina taplo luacheck"
 BREW_CASKS = "wezterm nikitabobko/tap/aerospace font-jetbrains-mono-nerd-font"
 
 [tasks.bootstrap]
@@ -89,12 +92,175 @@ run = [
 ]
 
 [tasks.destow]
-description = "Remove all symlinks created by stow"
+description = "Remove all symlinks created by stow (with confirmation)"
 dir = "{{env.DOTFILES_ROOT}}"
-run = [
-    "stow -D .", # "stow -Dt ~/.config .",
-    "echo '✓ Symlinks removed'",
-]
+run = '''
+echo "⚠️  This will remove all symlinks in {{env.XDG_CONFIG_HOME}}"
+echo "The following configurations will be unstowed:"
+stow -D -nv . 2>&1 | grep "UNLINK:" || echo "  (no symlinks to remove)"
+echo ""
+read -p "Continue with destow? (y/N): " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    stow -D . && echo "✓ Symlinks removed"
+else
+    echo "Destow cancelled"
+    exit 1
+fi
+'''
+
+[tasks.stow-tool]
+description = "Stow a specific tool's configuration"
+dir = "{{env.DOTFILES_ROOT}}"
+run = '''
+TOOL="{{arg(name="tool")}}"
+if [[ -z "$TOOL" ]]; then
+    echo "Usage: mise run stow-tool <tool-name>"
+    echo "Available tools: nvim, tmux, wezterm, aerospace, starship, emacs, git, zsh, mise"
+    exit 1
+fi
+
+if [[ ! -d "$TOOL" ]]; then
+    echo "Error: Tool directory '$TOOL' not found"
+    echo "Available tools: nvim, tmux, wezterm, aerospace, starship, emacs, git, zsh, mise"
+    exit 1
+fi
+
+stow "$TOOL" && echo "✓ $TOOL configuration stowed to {{env.XDG_CONFIG_HOME}}"
+'''
+
+[tasks.restow-tool]
+description = "Restow a specific tool's configuration"
+dir = "{{env.DOTFILES_ROOT}}"
+run = '''
+TOOL="{{arg(name="tool")}}"
+if [[ -z "$TOOL" ]]; then
+    echo "Usage: mise run restow-tool <tool-name>"
+    echo "Available tools: nvim, tmux, wezterm, aerospace, starship, emacs, git, zsh, mise"
+    exit 1
+fi
+
+if [[ ! -d "$TOOL" ]]; then
+    echo "Error: Tool directory '$TOOL' not found"
+    exit 1
+fi
+
+stow -R "$TOOL" && echo "✓ $TOOL configuration restowed"
+'''
+
+[tasks.destow-tool]
+description = "Remove symlinks for a specific tool"
+dir = "{{env.DOTFILES_ROOT}}"
+run = '''
+TOOL="{{arg(name="tool")}}"
+if [[ -z "$TOOL" ]]; then
+    echo "Usage: mise run destow-tool <tool-name>"
+    echo "Available tools: nvim, tmux, wezterm, aerospace, starship, emacs, git, zsh, mise"
+    exit 1
+fi
+
+if [[ ! -d "$TOOL" ]]; then
+    echo "Error: Tool directory '$TOOL' not found"
+    exit 1
+fi
+
+stow -D "$TOOL" && echo "✓ $TOOL symlinks removed"
+'''
+
+[tasks.validate]
+description = "Validate all configuration files"
+run = '''
+echo "Validating configurations..."
+FAILED=0
+
+# Validate TOML files
+echo "→ Checking TOML files..."
+[[ -f aerospace/aerospace.toml ]] && taplo check aerospace/aerospace.toml 2>/dev/null || { echo "  ✗ aerospace.toml invalid or missing"; FAILED=1; }
+[[ -f starship/starship.toml ]] && taplo check starship/starship.toml 2>/dev/null || { echo "  ✗ starship.toml invalid or missing"; FAILED=1; }
+[[ $FAILED -eq 0 ]] && echo "  ✓ TOML files valid"
+
+# Validate Lua files
+echo "→ Checking Lua files..."
+[[ -f wezterm/wezterm.lua ]] && luacheck wezterm/wezterm.lua 2>/dev/null || { echo "  ✗ wezterm.lua invalid or missing"; FAILED=1; }
+[[ -d nvim ]] && luacheck nvim/ --quiet 2>/dev/null || { echo "  ✗ nvim config invalid or missing"; FAILED=1; }
+[[ $FAILED -eq 0 ]] && echo "  ✓ Lua files valid"
+
+# Validate shell configs
+echo "→ Checking shell scripts..."
+[[ -f zsh/.zshrc ]] && shellcheck -x zsh/.zshrc 2>/dev/null || { echo "  ✗ .zshrc has issues or missing"; FAILED=1; }
+[[ $FAILED -eq 0 ]] && echo "  ✓ Shell scripts valid"
+
+# Validate tmux config
+echo "→ Checking tmux config..."
+[[ -f tmux/tmux.conf ]] && tmux source-file tmux/tmux.conf 2>/dev/null || { echo "  ✗ tmux.conf invalid or missing"; FAILED=1; }
+[[ $FAILED -eq 0 ]] && echo "  ✓ tmux config valid"
+
+# Validate nvim config (headless check)
+echo "→ Checking neovim config..."
+nvim --headless -c 'qa' 2>/dev/null || { echo "  ✗ nvim config invalid"; FAILED=1; }
+[[ $FAILED -eq 0 ]] && echo "  ✓ nvim config valid"
+
+# Validate emacs config
+echo "→ Checking emacs config..."
+emacs --batch --eval "(kill-emacs)" 2>/dev/null || { echo "  ✗ emacs config invalid"; FAILED=1; }
+[[ $FAILED -eq 0 ]] && echo "  ✓ emacs config valid"
+
+if [[ $FAILED -eq 0 ]]; then
+    echo "✓ All validations passed"
+    exit 0
+else
+    echo "✗ Some validations failed"
+    exit 1
+fi
+'''
+
+[tasks.validate-tool]
+description = "Validate a specific tool's configuration"
+run = '''
+TOOL="{{arg(name="tool")}}"
+if [[ -z "$TOOL" ]]; then
+    echo "Usage: mise run validate-tool <tool-name>"
+    echo "Available tools: tmux, nvim, emacs, aerospace, starship, wezterm, zsh"
+    exit 1
+fi
+
+case "$TOOL" in
+    tmux)
+        echo "Validating tmux configuration..."
+        tmux source-file tmux/tmux.conf 2>/dev/null && echo "✓ tmux config valid" || { echo "✗ tmux config invalid"; exit 1; }
+        ;;
+    nvim)
+        echo "Validating neovim configuration..."
+        luacheck nvim/ --quiet 2>/dev/null && echo "✓ nvim Lua valid" || { echo "✗ nvim Lua invalid"; exit 1; }
+        nvim --headless -c 'qa' 2>/dev/null && echo "✓ nvim config valid" || { echo "✗ nvim config invalid"; exit 1; }
+        ;;
+    emacs)
+        echo "Validating emacs configuration..."
+        emacs --batch --eval "(kill-emacs)" 2>/dev/null && echo "✓ emacs config valid" || { echo "✗ emacs config invalid"; exit 1; }
+        ;;
+    aerospace)
+        echo "Validating aerospace configuration..."
+        taplo check aerospace/aerospace.toml 2>/dev/null && echo "✓ aerospace.toml valid" || { echo "✗ aerospace.toml invalid"; exit 1; }
+        ;;
+    starship)
+        echo "Validating starship configuration..."
+        taplo check starship/starship.toml 2>/dev/null && echo "✓ starship.toml valid" || { echo "✗ starship.toml invalid"; exit 1; }
+        ;;
+    wezterm)
+        echo "Validating wezterm configuration..."
+        luacheck wezterm/wezterm.lua 2>/dev/null && echo "✓ wezterm.lua valid" || { echo "✗ wezterm.lua invalid"; exit 1; }
+        ;;
+    zsh)
+        echo "Validating zsh configuration..."
+        [[ -f zsh/.zshrc ]] && shellcheck -x zsh/.zshrc 2>/dev/null && echo "✓ .zshrc valid" || { echo "✗ .zshrc has issues"; exit 1; }
+        ;;
+    *)
+        echo "Unknown tool: $TOOL"
+        echo "Available tools: tmux, nvim, emacs, aerospace, starship, wezterm, zsh"
+        exit 1
+        ;;
+esac
+'''
 
 [tasks.doctor]
 description = "Check mise and tool installation status"
@@ -127,4 +293,72 @@ run = '''
 echo 'export ZDOTDIR="{{env.XDG_CONFIG_HOME}}/zsh"' > ~/.zshenv && \
 touch ~/.hushlogin && \
 echo '✓ ZDOTDIR set in ~/.zshenv and .hushlogin created'
+'''
+
+[tasks.watch]
+description = "Watch org files and auto-tangle on changes"
+dir = "{{env.DOTFILES_ROOT}}"
+run = '''
+echo "👀 Watching for changes in .org files..."
+echo "Press Ctrl+C to stop"
+fswatch -o **/*.org | while read -r event; do
+    echo "→ Change detected, tangling..."
+    mise run tangle && echo "✓ Tangle complete"
+done
+'''
+
+[tasks.tangle-changed]
+description = "Tangle only modified org files"
+dir = "{{env.DOTFILES_ROOT}}"
+run = '''
+CHANGED_ORG_FILES=$(git diff --name-only HEAD | grep '.org$' || true)
+
+if [ -z "$CHANGED_ORG_FILES" ]; then
+    echo "No modified org files to tangle"
+    exit 0
+fi
+
+echo "Tangling modified org files:"
+for file in $CHANGED_ORG_FILES; do
+    if [ -f "$file" ]; then
+        echo "  → $file"
+        emacs --batch "$file" --eval '(org-babel-tangle)' 2>/dev/null
+    fi
+done
+
+echo "✓ Modified org files tangled"
+'''
+
+[tasks.reload-shell]
+description = "Reload shell configuration"
+run = '''
+echo "Reloading shell configuration..."
+exec "$SHELL" -l
+'''
+
+[tasks.clean-tangled]
+description = "Remove all tangled configuration files"
+dir = "{{env.DOTFILES_ROOT}}"
+run = '''
+echo "⚠️  This will remove all tangled configuration files"
+read -p "Continue? (y/N): " -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "Clean cancelled"
+    exit 1
+fi
+
+echo "Cleaning tangled files..."
+rm -f tmux/.config/tmux/tmux.conf tmux/.config/tmux/tmux-*.conf
+rm -f wezterm/.config/wezterm/wezterm.lua
+rm -f aerospace/.config/aerospace/aerospace.toml
+rm -f starship/.config/starship.toml
+rm -f git/.config/git/.gitconfig
+rm -f nvim/.config/nvim/init.lua nvim/.config/nvim/lua/*.lua
+rm -f emacs/.config/emacs/early-init.el emacs/.config/emacs/config.el
+rm -f zsh/.config/zsh/.zshenv zsh/.config/zsh/.zprofile zsh/.config/zsh/.zshrc zsh/.config/zsh/aliases
+rm -f mise/config.toml
+
+echo "✓ Tangled files removed"
+echo "Run 'mise run tangle' to regenerate configurations"
 '''

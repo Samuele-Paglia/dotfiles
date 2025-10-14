@@ -1,21 +1,45 @@
+# Mise configuration for dotfiles repository
+# All tasks consolidated in a single file for simplicity
+
 [settings]
 verbose = false
 experimental = true
 
 [tools]
-shellcheck = "latest"            # Shell script linter (mise-managed)
+shellcheck = "latest"  # Shell script linter (mise-managed)
 
 [env]
 DOTFILES_ROOT = "{{env.DOTFILES_ROOT | default(value=env.HOME ~ '/Documents/repos/dotfiles')}}"
-MISE_CONFIG_DIR = "{{config_root}}"
 XDG_CONFIG_HOME = "{{env.XDG_CONFIG_HOME | default(value=env.HOME ~ '/.config')}}"
 BREW_CLI_TOOLS = "stow git git-lfs eza bat fzf zoxide ripgrep fd zsh-autosuggestions zsh-syntax-highlighting atuin starship neovim emacs macchina taplo luacheck"
 BREW_CASKS = "wezterm nikitabobko/tap/aerospace font-jetbrains-mono-nerd-font"
+
+# ==============================================================================
+# ORCHESTRATION TASKS
+# ==============================================================================
 
 [tasks.bootstrap]
 description = "Complete setup: install tools, tangle configs, and stow dotfiles"
 depends = ["install", "tangle", "stow", "setup-tmux", "setup-zsh"]
 run = "echo '✓ Bootstrap complete! Dotfiles are ready.'"
+
+[tasks.doctor]
+description = "Check mise and tool installation status"
+run = [
+    "mise doctor",
+    "mise list",
+]
+
+[tasks.reload-shell]
+description = "Reload shell configuration"
+run = '''
+echo "Reloading shell configuration..."
+exec "$SHELL" -l
+'''
+
+# ==============================================================================
+# DEPENDENCY INSTALLATION TASKS
+# ==============================================================================
 
 [tasks.install]
 description = "Install all tools (Homebrew CLI tools and casks)"
@@ -46,6 +70,10 @@ run = [
     "echo '✓ All tools updated'",
 ]
 
+# ==============================================================================
+# LITERATE PROGRAMMING TASKS
+# ==============================================================================
+
 [tasks.tangle]
 description = "Tangle all Org mode configuration files"
 dir = "{{env.DOTFILES_ROOT}}"
@@ -59,8 +87,7 @@ emacs --batch --eval "(progn \
                   \"{{env.DOTFILES_ROOT}}/git/README.org\" \
                   \"{{env.DOTFILES_ROOT}}/nvim/README.org\" \
                   \"{{env.DOTFILES_ROOT}}/emacs/config.org\" \
-                  \"{{env.DOTFILES_ROOT}}/zsh/README.org\" \
-                  \"{{env.DOTFILES_ROOT}}/mise/README.org\")) \
+                  \"{{env.DOTFILES_ROOT}}/zsh/README.org\")) \
     (when (file-exists-p file) \
       (message \"Tangling %s...\" file) \
       (with-current-buffer (find-file-noselect file) \
@@ -68,6 +95,70 @@ emacs --batch --eval "(progn \
         (kill-buffer)))))"
 '''
 outputs = ["echo '✓ All configurations tangled'"]
+
+[tasks.watch]
+description = "Watch org files and auto-tangle on changes"
+dir = "{{env.DOTFILES_ROOT}}"
+run = '''
+echo "👀 Watching for changes in .org files..."
+echo "Press Ctrl+C to stop"
+fswatch -o **/*.org | while read -r event; do
+    echo "→ Change detected, tangling..."
+    mise run tangle && echo "✓ Tangle complete"
+done
+'''
+
+[tasks.tangle-changed]
+description = "Tangle only modified org files"
+dir = "{{env.DOTFILES_ROOT}}"
+run = '''
+CHANGED_ORG_FILES=$(git diff --name-only HEAD | grep '.org$' || true)
+
+if [ -z "$CHANGED_ORG_FILES" ]; then
+    echo "No modified org files to tangle"
+    exit 0
+fi
+
+echo "Tangling modified org files:"
+for file in $CHANGED_ORG_FILES; do
+    if [ -f "$file" ]; then
+        echo "  → $file"
+        emacs --batch "$file" --eval '(org-babel-tangle)' 2>/dev/null
+    fi
+done
+
+echo "✓ Modified org files tangled"
+'''
+
+[tasks.clean-tangled]
+description = "Remove all tangled configuration files"
+dir = "{{env.DOTFILES_ROOT}}"
+run = '''
+echo "⚠️  This will remove all tangled configuration files"
+read -p "Continue? (y/N): " -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "Clean cancelled"
+    exit 1
+fi
+
+echo "Cleaning tangled files..."
+rm -f tmux/.config/tmux/tmux.conf tmux/.config/tmux/tmux-*.conf
+rm -f wezterm/.config/wezterm/wezterm.lua
+rm -f aerospace/.config/aerospace/aerospace.toml
+rm -f starship/.config/starship.toml
+rm -f git/.config/git/.gitconfig
+rm -f nvim/.config/nvim/init.lua nvim/.config/nvim/lua/*.lua
+rm -f emacs/.config/emacs/early-init.el emacs/.config/emacs/config.el
+rm -f zsh/.config/zsh/.zshenv zsh/.config/zsh/.zprofile zsh/.config/zsh/.zshrc zsh/.config/zsh/aliases
+
+echo "✓ Tangled files removed"
+echo "Run 'mise run tangle' to regenerate configurations"
+'''
+
+# ==============================================================================
+# DEPLOYMENT TASKS (STOW)
+# ==============================================================================
 
 [tasks.stow]
 description = "Set up dotfiles using stow (creates symlinks in XDG config directory)"
@@ -81,13 +172,13 @@ run = [
 [tasks.stow-verify]
 description = "Verify stow configuration (dry run)"
 dir = "{{env.DOTFILES_ROOT}}"
-run = "stow -nv ." # "stow --adopt -t ~/.config -nv ."
+run = "stow -nv ."
 
 [tasks.restow]
 description = "Re-stow all configurations"
 dir = "{{env.DOTFILES_ROOT}}"
 run = [
-    "stow -R .", # "stow -Rt ~/.config .",
+    "stow -R .",
     "echo '✓ Configurations re-stowed'",
 ]
 
@@ -116,13 +207,13 @@ run = '''
 TOOL="{{arg(name="tool")}}"
 if [[ -z "$TOOL" ]]; then
     echo "Usage: mise run stow-tool <tool-name>"
-    echo "Available tools: nvim, tmux, wezterm, aerospace, starship, emacs, git, zsh, mise"
+    echo "Available tools: nvim, tmux, wezterm, aerospace, starship, emacs, git, zsh"
     exit 1
 fi
 
 if [[ ! -d "$TOOL" ]]; then
     echo "Error: Tool directory '$TOOL' not found"
-    echo "Available tools: nvim, tmux, wezterm, aerospace, starship, emacs, git, zsh, mise"
+    echo "Available tools: nvim, tmux, wezterm, aerospace, starship, emacs, git, zsh"
     exit 1
 fi
 
@@ -136,7 +227,7 @@ run = '''
 TOOL="{{arg(name="tool")}}"
 if [[ -z "$TOOL" ]]; then
     echo "Usage: mise run restow-tool <tool-name>"
-    echo "Available tools: nvim, tmux, wezterm, aerospace, starship, emacs, git, zsh, mise"
+    echo "Available tools: nvim, tmux, wezterm, aerospace, starship, emacs, git, zsh"
     exit 1
 fi
 
@@ -155,7 +246,7 @@ run = '''
 TOOL="{{arg(name="tool")}}"
 if [[ -z "$TOOL" ]]; then
     echo "Usage: mise run destow-tool <tool-name>"
-    echo "Available tools: nvim, tmux, wezterm, aerospace, starship, emacs, git, zsh, mise"
+    echo "Available tools: nvim, tmux, wezterm, aerospace, starship, emacs, git, zsh"
     exit 1
 fi
 
@@ -166,6 +257,10 @@ fi
 
 stow -D "$TOOL" && echo "✓ $TOOL symlinks removed"
 '''
+
+# ==============================================================================
+# VALIDATION TASKS
+# ==============================================================================
 
 [tasks.validate]
 description = "Validate all configuration files"
@@ -262,12 +357,9 @@ case "$TOOL" in
 esac
 '''
 
-[tasks.doctor]
-description = "Check mise and tool installation status"
-run = [
-    "mise doctor",
-    "mise list",
-]
+# ==============================================================================
+# TOOL-SPECIFIC SETUP TASKS
+# ==============================================================================
 
 [tasks.setup-tmux]
 description = "Install TMUX Plugin Manager (TPM)"
@@ -293,72 +385,4 @@ run = '''
 echo 'export ZDOTDIR="{{env.XDG_CONFIG_HOME}}/zsh"' > ~/.zshenv && \
 touch ~/.hushlogin && \
 echo '✓ ZDOTDIR set in ~/.zshenv and .hushlogin created'
-'''
-
-[tasks.watch]
-description = "Watch org files and auto-tangle on changes"
-dir = "{{env.DOTFILES_ROOT}}"
-run = '''
-echo "👀 Watching for changes in .org files..."
-echo "Press Ctrl+C to stop"
-fswatch -o **/*.org | while read -r event; do
-    echo "→ Change detected, tangling..."
-    mise run tangle && echo "✓ Tangle complete"
-done
-'''
-
-[tasks.tangle-changed]
-description = "Tangle only modified org files"
-dir = "{{env.DOTFILES_ROOT}}"
-run = '''
-CHANGED_ORG_FILES=$(git diff --name-only HEAD | grep '.org$' || true)
-
-if [ -z "$CHANGED_ORG_FILES" ]; then
-    echo "No modified org files to tangle"
-    exit 0
-fi
-
-echo "Tangling modified org files:"
-for file in $CHANGED_ORG_FILES; do
-    if [ -f "$file" ]; then
-        echo "  → $file"
-        emacs --batch "$file" --eval '(org-babel-tangle)' 2>/dev/null
-    fi
-done
-
-echo "✓ Modified org files tangled"
-'''
-
-[tasks.reload-shell]
-description = "Reload shell configuration"
-run = '''
-echo "Reloading shell configuration..."
-exec "$SHELL" -l
-'''
-
-[tasks.clean-tangled]
-description = "Remove all tangled configuration files"
-dir = "{{env.DOTFILES_ROOT}}"
-run = '''
-echo "⚠️  This will remove all tangled configuration files"
-read -p "Continue? (y/N): " -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo "Clean cancelled"
-    exit 1
-fi
-
-echo "Cleaning tangled files..."
-rm -f tmux/.config/tmux/tmux.conf tmux/.config/tmux/tmux-*.conf
-rm -f wezterm/.config/wezterm/wezterm.lua
-rm -f aerospace/.config/aerospace/aerospace.toml
-rm -f starship/.config/starship.toml
-rm -f git/.config/git/.gitconfig
-rm -f nvim/.config/nvim/init.lua nvim/.config/nvim/lua/*.lua
-rm -f emacs/.config/emacs/early-init.el emacs/.config/emacs/config.el
-rm -f zsh/.config/zsh/.zshenv zsh/.config/zsh/.zprofile zsh/.config/zsh/.zshrc zsh/.config/zsh/aliases
-rm -f mise/config.toml
-
-echo "✓ Tangled files removed"
-echo "Run 'mise run tangle' to regenerate configurations"
 '''

@@ -15,6 +15,15 @@ BREW_CLI_TOOLS = "stow git git-lfs eza bat fzf zoxide ripgrep fd zsh-autosuggest
 BREW_CASKS = "wezterm nikitabobko/tap/aerospace font-jetbrains-mono-nerd-font"
 
 # ==============================================================================
+# HOOKS
+# ==============================================================================
+
+# Auto-tangle org files when they change
+[[watch_files]]
+patterns = ["**/*.org"]
+run = "mise run tangle-single $MISE_WATCH_FILES_MODIFIED"
+
+# ==============================================================================
 # ORCHESTRATION TASKS
 # ==============================================================================
 
@@ -70,7 +79,6 @@ echo '✓ Homebrew casks installed'
 
 [tasks.tangle]
 description = "Tangle all Org mode configuration files"
-dir = "{{env.DOTFILES_ROOT}}"
 run = '''
 emacs --batch --eval "(progn \
   (require 'org) \
@@ -90,9 +98,27 @@ emacs --batch --eval "(progn \
 '''
 outputs = ["echo '✓ All configurations tangled'"]
 
+[tasks.tangle-single]
+description = "Tangle a single Org mode file"
+run = '''
+ORG_FILE="{{arg(name="file")}}"
+if [[ -z "$ORG_FILE" ]]; then
+    echo "Usage: mise run tangle-single <org-file-path>"
+    exit 1
+fi
+
+if [[ ! -f "$ORG_FILE" ]]; then
+    echo "Error: File '$ORG_FILE' not found"
+    exit 1
+fi
+
+echo "Tangling $ORG_FILE..."
+emacs --batch "$ORG_FILE" --eval '(org-babel-tangle)' 2>/dev/null && \
+echo "✓ Tangled $(basename $ORG_FILE)"
+'''
+
 [tasks.watch]
 description = "Watch org files and auto-tangle on changes"
-dir = "{{env.DOTFILES_ROOT}}"
 run = '''
 echo "👀 Watching for changes in .org files..."
 echo "Press Ctrl+C to stop"
@@ -104,7 +130,6 @@ done
 
 [tasks.tangle-changed]
 description = "Tangle only modified org files"
-dir = "{{env.DOTFILES_ROOT}}"
 run = '''
 CHANGED_ORG_FILES=$(git diff --name-only HEAD | grep '.org$' || true)
 
@@ -126,7 +151,6 @@ echo "✓ Modified org files tangled"
 
 [tasks.clean-tangled]
 description = "Remove all tangled configuration files"
-dir = "{{env.DOTFILES_ROOT}}"
 run = '''
 echo "⚠️  This will remove all tangled configuration files"
 read -p "Continue? (y/N): " -n 1 -r
@@ -157,7 +181,6 @@ echo "Run 'mise run tangle' to regenerate configurations"
 [tasks.stow]
 description = "Set up dotfiles using stow (creates symlinks in XDG config directory)"
 depends = ["tangle"]
-dir = "{{env.DOTFILES_ROOT}}"
 run = [
     "stow .",
     "echo '✓ Dotfiles symlinked to {{env.XDG_CONFIG_HOME}}'",
@@ -165,12 +188,10 @@ run = [
 
 [tasks.stow-verify]
 description = "Verify stow configuration (dry run)"
-dir = "{{env.DOTFILES_ROOT}}"
 run = "stow -nv ."
 
 [tasks.restow]
 description = "Re-stow all configurations"
-dir = "{{env.DOTFILES_ROOT}}"
 run = [
     "stow -R .",
     "echo '✓ Configurations re-stowed'",
@@ -178,7 +199,6 @@ run = [
 
 [tasks.destow]
 description = "Remove all symlinks created by stow (with confirmation)"
-dir = "{{env.DOTFILES_ROOT}}"
 run = '''
 echo "⚠️  This will remove all symlinks in {{env.XDG_CONFIG_HOME}}"
 echo "The following configurations will be unstowed:"
@@ -196,7 +216,6 @@ fi
 
 [tasks.stow-tool]
 description = "Stow a specific tool's configuration"
-dir = "{{env.DOTFILES_ROOT}}"
 run = '''
 TOOL="{{arg(name="tool")}}"
 if [[ -z "$TOOL" ]]; then
@@ -216,7 +235,6 @@ stow "$TOOL" && echo "✓ $TOOL configuration stowed to {{env.XDG_CONFIG_HOME}}"
 
 [tasks.restow-tool]
 description = "Restow a specific tool's configuration"
-dir = "{{env.DOTFILES_ROOT}}"
 run = '''
 TOOL="{{arg(name="tool")}}"
 if [[ -z "$TOOL" ]]; then
@@ -235,7 +253,6 @@ stow -R "$TOOL" && echo "✓ $TOOL configuration restowed"
 
 [tasks.destow-tool]
 description = "Remove symlinks for a specific tool"
-dir = "{{env.DOTFILES_ROOT}}"
 run = '''
 TOOL="{{arg(name="tool")}}"
 if [[ -z "$TOOL" ]]; then

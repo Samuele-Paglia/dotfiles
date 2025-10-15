@@ -1,9 +1,9 @@
 # Mise configuration for dotfiles repository
-# All tasks consolidated in a single file for simplicity
 
 [settings]
 verbose = false
 experimental = true
+lockfile = true
 
 [tools]
 shellcheck = "latest"  # Shell script linter (mise-managed)
@@ -11,7 +11,7 @@ shellcheck = "latest"  # Shell script linter (mise-managed)
 [env]
 DOTFILES_ROOT = "{{env.DOTFILES_ROOT | default(value=env.HOME ~ '/Documents/repos/dotfiles')}}"
 XDG_CONFIG_HOME = "{{env.XDG_CONFIG_HOME | default(value=env.HOME ~ '/.config')}}"
-BREW_CLI_TOOLS = "stow git git-lfs eza bat fzf zoxide ripgrep fd zsh-autosuggestions zsh-syntax-highlighting atuin starship neovim emacs macchina taplo luacheck"
+BREW_CLI_TOOLS = "stow git git-lfs eza bat fzf zoxide ripgrep fd zsh-autosuggestions zsh-syntax-highlighting atuin starship neovim emacs tmux macchina taplo luacheck"
 BREW_CASKS = "wezterm nikitabobko/tap/aerospace font-jetbrains-mono-nerd-font"
 
 # ==============================================================================
@@ -20,7 +20,8 @@ BREW_CASKS = "wezterm nikitabobko/tap/aerospace font-jetbrains-mono-nerd-font"
 
 [tasks.bootstrap]
 description = "Complete setup: install tools, tangle configs, and stow dotfiles"
-depends = ["install", "tangle", "stow", "setup-tmux", "setup-zsh"]
+depends = ["install", "tangle", "stow"]
+depends_post = ["setup-tmux", "setup-zsh"]
 run = "echo '✓ Bootstrap complete! Dotfiles are ready.'"
 
 [tasks.doctor]
@@ -62,13 +63,6 @@ run = '''
 brew install --cask {{env.BREW_CASKS}} && \
 echo '✓ Homebrew casks installed'
 '''
-
-[tasks.update]
-description = "Update all tools to latest versions"
-run = [
-    "brew upgrade",
-    "echo '✓ All tools updated'",
-]
 
 # ==============================================================================
 # LITERATE PROGRAMMING TASKS

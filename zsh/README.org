@@ -13,6 +13,7 @@
 - [[#interactive-shell-configuration-zshrc][Interactive Shell Configuration (zshrc)]]
   - [[#completion-system][Completion System]]
   - [[#history-configuration][History Configuration]]
+  - [[#session-environment-variables][Session Environment Variables]]
   - [[#plugin-loading][Plugin Loading]]
   - [[#tool-initialization][Tool Initialization]]
 - [[#aliases][Aliases]]
@@ -166,6 +167,16 @@ Save timestamps alongside commands in the history file. This allows you to see w
 setopt EXTENDED_HISTORY
 #+end_src
 
+** Session Environment Variables
+
+Session-specific environment variables that need to be set for each interactive shell session. Unlike variables in =.zshenv=, these depend on the current session context.
+
+Set the GPG_TTY environment variable to the current terminal. This is required for GPG to properly prompt for passphrases in the terminal. GPG needs to know which TTY to use for interactive operations like signing commits or decrypting files:
+
+#+begin_src shell
+export GPG_TTY=$(tty)
+#+end_src
+
 ** Plugin Loading
 
 Source our custom aliases file. This keeps aliases organized in a separate file for better maintainability:
@@ -180,6 +191,12 @@ Load the zsh-autosuggestions plugin. This plugin suggests commands as you type b
 source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 #+end_src
 
+Bind the Escape key to execute the current autosuggestion. This allows you to quickly accept and run a suggested command by pressing Escape, rather than accepting with the right arrow and then pressing Enter:
+
+#+begin_src shell
+bindkey '\e' autosuggest-execute
+#+end_src
+
 Load the zsh-syntax-highlighting plugin. This plugin provides real-time syntax highlighting in the command line, showing valid commands in green and invalid ones in red:
 
 #+begin_src shell
@@ -187,6 +204,12 @@ source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 #+end_src
 
 ** Tool Initialization
+
+Initialize mise for tool version management and task automation. This must be loaded early to ensure the correct tool versions are available in PATH:
+
+#+begin_src shell
+eval "$(mise activate zsh)"
+#+end_src
 
 Initialize fzf (fuzzy finder) with Zsh integration. This sets up key bindings and completion for fuzzy finding files, command history, and more:
 

@@ -13,11 +13,17 @@ setopt HIST_IGNORE_DUPS
 
 setopt EXTENDED_HISTORY
 
+export GPG_TTY=$(tty)
+
 source ~/.config/zsh/aliases
 
 source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 
+bindkey '\e' autosuggest-execute
+
 source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+eval "$(mise activate zsh)"
 
 source <(fzf --zsh)
 

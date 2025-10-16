@@ -17,11 +17,11 @@ export GPG_TTY=$(tty)
 
 source ~/.config/zsh/aliases
 
-source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+source "$(mise where http:zsh-autosuggestions)"/zsh-autosuggestions-*/zsh-autosuggestions.zsh
 
 bindkey '\e' autosuggest-execute
 
-source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source "$(mise where http:zsh-syntax-highlighting)"/zsh-syntax-highlighting-*/zsh-syntax-highlighting.zsh
 
 eval "$(mise activate zsh)"
 

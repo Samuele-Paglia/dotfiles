@@ -102,7 +102,7 @@ Examples of what you might put here in the future:
 Display system information using macchina when opening a new terminal. Macchina provides a fast, minimal system information display showing OS, kernel, uptime, packages, and more:
 
 #+begin_src shell
-macchina
+# macchina # Tmp commented
 #+end_src
 
 * Interactive Shell Configuration (zshrc)
@@ -185,10 +185,10 @@ Source our custom aliases file. This keeps aliases organized in a separate file 
 source ~/.config/zsh/aliases
 #+end_src
 
-Load the zsh-autosuggestions plugin. This plugin suggests commands as you type based on your command history, displayed in gray text. Press the right arrow key to accept a suggestion:
+Load the zsh-autosuggestions plugin. This plugin suggests commands as you type based on your command history, displayed in gray text. Press the right arrow key to accept a suggestion. The glob pattern automatically matches any installed version:
 
 #+begin_src shell
-source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+source "$(mise where http:zsh-autosuggestions)"/zsh-autosuggestions-*/zsh-autosuggestions.zsh
 #+end_src
 
 Bind the Escape key to execute the current autosuggestion. This allows you to quickly accept and run a suggested command by pressing Escape, rather than accepting with the right arrow and then pressing Enter:
@@ -197,10 +197,10 @@ Bind the Escape key to execute the current autosuggestion. This allows you to qu
 bindkey '\e' autosuggest-execute
 #+end_src
 
-Load the zsh-syntax-highlighting plugin. This plugin provides real-time syntax highlighting in the command line, showing valid commands in green and invalid ones in red:
+Load the zsh-syntax-highlighting plugin. This plugin provides real-time syntax highlighting in the command line, showing valid commands in green and invalid ones in red. The glob pattern automatically matches any installed version:
 
 #+begin_src shell
-source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source "$(mise where http:zsh-syntax-highlighting)"/zsh-syntax-highlighting-*/zsh-syntax-highlighting.zsh
 #+end_src
 
 ** Tool Initialization

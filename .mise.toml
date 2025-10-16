@@ -6,12 +6,18 @@ experimental = true
 lockfile = true
 
 [tools]
-shellcheck = "latest"  # Shell script linter (mise-managed)
+shellcheck = "0.11.0"  # Shell script linter (mise-managed)
+taplo = "0.10.0"
+cmake = "4.1.2"
+
+"ubi:Kampfkarren/selene" = "0.29.0" # Lua linter
+"http:zsh-autosuggestions" = { version = "0.7.1", url = "https://github.com/zsh-users/zsh-autosuggestions/archive/refs/tags/v{{version}}.tar.gz" }
+"http:zsh-syntax-highlighting" = { version = "0.8.0", url = "https://github.com/zsh-users/zsh-syntax-highlighting/archive/refs/tags/{{version}}.tar.gz" }
 
 [env]
 DOTFILES_ROOT = "{{env.DOTFILES_ROOT | default(value=env.HOME ~ '/Documents/repos/dotfiles')}}"
 XDG_CONFIG_HOME = "{{env.XDG_CONFIG_HOME | default(value=env.HOME ~ '/.config')}}"
-BREW_CLI_TOOLS = "stow git git-lfs eza bat fzf zoxide ripgrep fd zsh-autosuggestions zsh-syntax-highlighting atuin starship neovim emacs tmux macchina taplo luacheck"
+BREW_CLI_TOOLS = "stow git git-lfs eza bat fzf zoxide ripgrep fd atuin starship neovim emacs tmux macchina"
 BREW_CASKS = "wezterm nikitabobko/tap/aerospace font-jetbrains-mono-nerd-font"
 
 # ==============================================================================
@@ -32,13 +38,6 @@ description = "Complete setup: install tools, tangle configs, and stow dotfiles"
 depends = ["install", "tangle", "stow"]
 depends_post = ["setup-tmux", "setup-zsh"]
 run = "echo '✓ Bootstrap complete! Dotfiles are ready.'"
-
-[tasks.doctor]
-description = "Check mise and tool installation status"
-run = [
-    "mise doctor",
-    "mise list",
-]
 
 [tasks.reload-shell]
 description = "Reload shell configuration"
@@ -393,7 +392,12 @@ run = [
 [tasks.setup-zsh]
 description = "Set ZDOTDIR in ~/.zshenv and create .hushlogin to suppress login messages"
 run = '''
-echo 'export ZDOTDIR="{{env.XDG_CONFIG_HOME}}/zsh"' > ~/.zshenv && \
+cat > ~/.zshenv << 'ZSHENV_EOF'
+export ZDOTDIR="{{env.XDG_CONFIG_HOME}}/zsh"
+
+# Source the .zshenv from ZDOTDIR since zsh won't reload it automatically
+[ -f "$ZDOTDIR/.zshenv" ] && source "$ZDOTDIR/.zshenv"
+ZSHENV_EOF
 touch ~/.hushlogin && \
-echo '✓ ZDOTDIR set in ~/.zshenv and .hushlogin created'
+echo '✓ ZDOTDIR set in ~/.zshenv (with auto-sourcing) and .hushlogin created'
 '''

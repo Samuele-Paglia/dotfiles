@@ -9,16 +9,32 @@ lockfile = true
 shellcheck = "0.11.0"  # Shell script linter (mise-managed)
 taplo = "0.10.0"
 cmake = "4.1.2"
+eza = "0.23.4"
+fzf = "0.66.0"
+bat = "0.25.0"
+zoxide = "0.9.8"
+ripgrep = "15.0.0"
+ripgrep-all = "0.10.9"
+fd = "10.3.0"
+#atuin = "latest"
+starship = "1.23.0"
+neovim = "0.11.4"
+tmux = "3.5a"
 
 "ubi:Kampfkarren/selene" = "0.29.0" # Lua linter
+"ubi:Macchina-CLI/macchina" = "6.4.0"
+"ubi:mfontanini/presenterm" = "0.15.1"
+"ubi:wez/wezterm" = "20240128-202157-1e552d76"
+
 "http:zsh-autosuggestions" = { version = "0.7.1", url = "https://github.com/zsh-users/zsh-autosuggestions/archive/refs/tags/v{{version}}.tar.gz" }
 "http:zsh-syntax-highlighting" = { version = "0.8.0", url = "https://github.com/zsh-users/zsh-syntax-highlighting/archive/refs/tags/{{version}}.tar.gz" }
+"http:stow" = { version = "2.4.1", url = "https://github.com/aspiers/stow/archive/refs/tags/v{{version}}.tar.gz", postinstall = "cd $MISE_TOOL_INSTALL_PATH; echo $PWD"} # TODO: compile stow
 
 [env]
 DOTFILES_ROOT = "{{env.DOTFILES_ROOT | default(value=env.HOME ~ '/Documents/repos/dotfiles')}}"
 XDG_CONFIG_HOME = "{{env.XDG_CONFIG_HOME | default(value=env.HOME ~ '/.config')}}"
-BREW_CLI_TOOLS = "stow git git-lfs eza bat fzf zoxide ripgrep fd atuin starship neovim emacs tmux macchina"
-BREW_CASKS = "wezterm nikitabobko/tap/aerospace font-jetbrains-mono-nerd-font"
+BREW_CLI_TOOLS = "stow git git-lfs emacs"
+BREW_CASKS = "nikitabobko/tap/aerospace font-jetbrains-mono-nerd-font"
 
 # ==============================================================================
 # HOOKS

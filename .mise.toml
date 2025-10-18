@@ -3,7 +3,6 @@
 [settings]
 verbose = false
 experimental = true
-lockfile = true
 
 [tools]
 shellcheck = "0.11.0"  # Shell script linter (mise-managed)
@@ -20,6 +19,7 @@ fd = "10.3.0"
 starship = "1.23.0"
 neovim = "0.11.4"
 tmux = "3.5a"
+git-lfs = "3.7.1"
 
 "ubi:Kampfkarren/selene" = "0.29.0" # Lua linter
 "ubi:Macchina-CLI/macchina" = "6.4.0"
@@ -28,22 +28,12 @@ tmux = "3.5a"
 
 "http:zsh-autosuggestions" = { version = "0.7.1", url = "https://github.com/zsh-users/zsh-autosuggestions/archive/refs/tags/v{{version}}.tar.gz" }
 "http:zsh-syntax-highlighting" = { version = "0.8.0", url = "https://github.com/zsh-users/zsh-syntax-highlighting/archive/refs/tags/{{version}}.tar.gz" }
-"http:stow" = { version = "2.4.1", url = "https://github.com/aspiers/stow/archive/refs/tags/v{{version}}.tar.gz", postinstall = "cd $MISE_TOOL_INSTALL_PATH; echo $PWD"} # TODO: compile stow
 
 [env]
 DOTFILES_ROOT = "{{env.DOTFILES_ROOT | default(value=env.HOME ~ '/Documents/repos/dotfiles')}}"
 XDG_CONFIG_HOME = "{{env.XDG_CONFIG_HOME | default(value=env.HOME ~ '/.config')}}"
-BREW_CLI_TOOLS = "stow git git-lfs emacs"
+BREW_CLI_TOOLS = "stow git emacs entr"
 BREW_CASKS = "nikitabobko/tap/aerospace font-jetbrains-mono-nerd-font"
-
-# ==============================================================================
-# HOOKS
-# ==============================================================================
-
-# Auto-tangle org files when they change
-[[watch_files]]
-patterns = ["**/*.org"]
-run = "mise run tangle-single $MISE_WATCH_FILES_MODIFIED"
 
 # ==============================================================================
 # ORCHESTRATION TASKS
@@ -67,7 +57,7 @@ exec "$SHELL" -l
 # ==============================================================================
 
 [tasks.install]
-description = "Install all tools (Homebrew CLI tools and casks)"
+description = "Install homebrew managed tools"
 depends = ["install-brew-tools", "install-brew-casks"]
 run = [
     "mkdir -p {{env.XDG_CONFIG_HOME}}",
@@ -133,14 +123,34 @@ echo "✓ Tangled $(basename $ORG_FILE)"
 '''
 
 [tasks.watch]
-description = "Watch org files and auto-tangle on changes"
+description = "Watch org files and auto-tangle on changes with entr"
 run = '''
+cd "{{env.DOTFILES_ROOT}}"
+
 echo "👀 Watching for changes in .org files..."
 echo "Press Ctrl+C to stop"
-fswatch -o **/*.org | while read -r event; do
-    echo "→ Change detected, tangling..."
-    mise run tangle && echo "✓ Tangle complete"
-done
+echo ""
+
+# List all org files explicitly and watch with entr
+ls -1 \
+  tmux/README.org \
+  wezterm/README.org \
+  aerospace/README.org \
+  starship/README.org \
+  git/README.org \
+  nvim/README.org \
+  emacs/config.org \
+  zsh/README.org \
+2>/dev/null | entr -p sh -c '
+  echo "→ [$(date +%H:%M:%S)] Change detected: $(basename $_)"
+  echo "  Tangling $_ ..."
+  if emacs --batch "$_" --eval "(org-babel-tangle)" 2>/dev/null; then
+    echo "  ✓ Tangled successfully"
+  else
+    echo "  ✗ Tangle failed!"
+  fi
+  echo ""
+'
 '''
 
 [tasks.tangle-changed]
@@ -195,7 +205,8 @@ echo "Run 'mise run tangle' to regenerate configurations"
 
 [tasks.stow]
 description = "Set up dotfiles using stow (creates symlinks in XDG config directory)"
-depends = ["tangle"]
+depends = ["tangle-changed"]
+dir = "{{env.DOTFILES_ROOT}}"
 run = [
     "stow .",
     "echo '✓ Dotfiles symlinked to {{env.XDG_CONFIG_HOME}}'",
@@ -203,10 +214,12 @@ run = [
 
 [tasks.stow-verify]
 description = "Verify stow configuration (dry run)"
+dir = "{{env.DOTFILES_ROOT}}"
 run = "stow -nv ."
 
 [tasks.restow]
 description = "Re-stow all configurations"
+dir = "{{env.DOTFILES_ROOT}}"
 run = [
     "stow -R .",
     "echo '✓ Configurations re-stowed'",
@@ -214,6 +227,7 @@ run = [
 
 [tasks.destow]
 description = "Remove all symlinks created by stow (with confirmation)"
+dir = "{{env.DOTFILES_ROOT}}"
 run = '''
 echo "⚠️  This will remove all symlinks in {{env.XDG_CONFIG_HOME}}"
 echo "The following configurations will be unstowed:"
@@ -392,17 +406,6 @@ description = "Install TMUX Plugin Manager (TPM)"
 run = [
     "git clone https://github.com/tmux-plugins/tpm {{env.XDG_CONFIG_HOME}}/tmux/plugins/tpm || echo 'TPM already installed'",
     "echo '✓ TPM installed. Press prefix + I in tmux to install plugins'",
-]
-
-[tasks.reload-tmux]
-description = "Reload TMUX configuration"
-run = "tmux source-file {{env.XDG_CONFIG_HOME}}/tmux/tmux.conf || echo 'Start tmux first, then reload with prefix + R'"
-
-[tasks.reload-aerospace]
-description = "Reload AeroSpace configuration"
-run = [
-    "aerospace reload-config",
-    "echo '✓ AeroSpace configuration reloaded'",
 ]
 
 [tasks.setup-zsh]
